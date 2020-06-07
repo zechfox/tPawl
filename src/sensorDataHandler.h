@@ -12,16 +12,7 @@
  
 using namespace std;
 
-#define ACCELEROMETER_PATH "/sys/bus/iio/devices/"
-#define ACCELEROMETER_DEVICE "iio:device0/"
-#define ACCELEROMETER_X_RAW_DATA "in_accel_x_raw"
-#define ACCELEROMETER_Y_RAW_DATA "in_accel_y_raw"
-#define ACCELEROMETER_RAW_DATA_FACTOR (0.000009806)
-#define ACCELEROMETER_THRESHOLD (7.0)
-
-#define MONITOR_NAME "DSI-1"
-#define ROTATE_COMMAND "xrandr --output {} --rotate {}"
-
+#define ROTATE_COMMAND "xrandr --output "
 struct CoordinatorData
 {
   std::uint32_t x;
@@ -31,9 +22,9 @@ struct CoordinatorData
 enum class Orientation
 {
   NORMAL,
-  LEFT_UP,
-  RIGHT_UP,
-  BOTTOM_UP
+  LEFT,
+  RIGHT,
+  INVERT 
 };
 
 class TouchPanelDevice
@@ -47,15 +38,15 @@ class TouchPanelDevice
 class Accelerometer
 {
   public:
-    Accelerometer()
+    Accelerometer(std::string& path, std::string& dev, std::string& x, std::string& y)
     {
-      m_accPathX.append(ACCELEROMETER_PATH);
-      m_accPathX.append(ACCELEROMETER_DEVICE);
-      m_accPathX.append(ACCELEROMETER_X_RAW_DATA);
+      m_accPathX.append(path);
+      m_accPathX.append(dev);
+      m_accPathX.append(x);
 
-      m_accPathY.append(ACCELEROMETER_PATH);
-      m_accPathY.append(ACCELEROMETER_DEVICE);
-      m_accPathY.append(ACCELEROMETER_X_RAW_DATA);
+      m_accPathY.append(path);
+      m_accPathY.append(dev);
+      m_accPathY.append(y);
 
       m_accRawDataX.open(m_accPathX, ios::in);
 
@@ -114,12 +105,14 @@ struct SensorData
 class SensorDataHandler
 {
   public:
-    SensorDataHandler();
+    SensorDataHandler(std::string& monitorName,
+                      float accRawDataFactor,
+                      float accThreshold);
     ~SensorDataHandler();
 
     std::shared_ptr<SensorData> getSensorData() const;
-    void registerTouchPanelDevice(std::shared_ptr<TouchPanelDevice> touchPanel_p);
-    void registerAccelerometer(std::shared_ptr<Accelerometer> accelerometer_p);
+    void registerTouchPanelDevice(std::shared_ptr<TouchPanelDevice> touchPanelPtr);
+    void registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr);
 
   private:
     Orientation getOrientation() const;
@@ -127,5 +120,7 @@ class SensorDataHandler
     std::shared_ptr<TouchPanelDevice> m_touchPanel_p;
     std::shared_ptr<Accelerometer> m_accelerometer_p;
     std::map<Orientation, std::string> m_rotateCommand;
+    float m_accRawDataFactor;
+    float m_accThreshold;
 };
 
