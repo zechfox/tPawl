@@ -98,9 +98,9 @@ class Accelerometer
 
 struct SensorData
 {
-  std::uint32_t fingerNumber;
+  std::int32_t fingerNumber;
   Orientation orientation;
-  std::vector<CoordinatorData> coordinatorsData;
+  std::map<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData;
 };
 
 class SensorDataHandler
@@ -112,15 +112,13 @@ class SensorDataHandler
                       std::string& touchScreenDevPath);
     ~SensorDataHandler();
 
-    std::shared_ptr<SensorData> getSensorData() const;
+    bool fillSensorData(std::shared_ptr<SensorData> sensorDataPtr);
     void registerTouchPanelDevice(std::shared_ptr<TouchPanelDevice> touchPanelPtr);
     void registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr);
-    void processSensorData();
-
+    void rotateScreen(Orientation orientation) const;
   private:
     Orientation getOrientation() const;
-    void rotateScreen(Orientation orientation) const;
-    void analyzeGesture(struct input_event& inputEventData);
+    bool collectEventData(struct input_event& inputEventData, std::shared_ptr<SensorData> sensorDataPtr);
     std::shared_ptr<TouchPanelDevice> m_touchPanel_p;
     std::shared_ptr<Accelerometer> m_accelerometer_p;
     std::map<Orientation, std::string> m_rotateCommand;

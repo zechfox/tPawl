@@ -10,22 +10,39 @@ using namespace std;
 int main()
 {
   cout << "Hello, world" << endl;
-  std::shared_ptr<ConfigParser> configParser_p = std::make_shared<ConfigParser>();
-  ConfigurationData confData = configParser_p->parseConfig();
-  auto gestureClub_p = std::make_shared<GestureClub>();
-  auto sensorDataHandler_p = std::make_shared<SensorDataHandler>(confData.monitorName,
-                                                                 confData.accRawDataFactor,
-                                                                 confData.accThreshold,
-                                                                 confData.tsDevPath);
-  auto accelerometer_p = std::make_shared<Accelerometer>(confData.accPath,
-                                                         confData.accDevice,
-                                                         confData.accRawDataX,
-                                                         confData.accRawDataY);
-  sensorDataHandler_p->registerAccelerometer(accelerometer_p);
+  std::shared_ptr<ConfigParser> configParserPtr = std::make_shared<ConfigParser>();
+  ConfigurationData confData = configParserPtr->parseConfig();
+  auto gestureClubPtr = std::make_shared<GestureClub>();
+  auto sensorDataHandlerPtr = std::make_shared<SensorDataHandler>(confData.monitorName,
+                                                                  confData.accRawDataFactor,
+                                                                  confData.accThreshold,
+                                                                  confData.tsDevPath);
+  auto accelerometerPtr = std::make_shared<Accelerometer>(confData.accPath,
+                                                          confData.accDevice,
+                                                          confData.accRawDataX,
+                                                          confData.accRawDataY);
+  sensorDataHandlerPtr->registerAccelerometer(accelerometerPtr);
+  configParserPtr.reset();
 
-  sensorDataHandler_p->getSensorData();
+  std::shared_ptr<SensorData> sensorDataPtr = std::make_shared<SensorData>();
+  auto orientation = Orientation::NORMAL;
+  while (true)
+  {
+    if (sensorDataHandlerPtr->fillSensorData(sensorDataPtr))
+    {
+      if (orientation != sensorDataPtr->orientation)
+      {
+        sensorDataHandlerPtr->rotateScreen(sensorDataPtr->orientation);
+        orientation = sensorDataPtr->orientation;
+      }
+    }
+    // TODO:exception 
+    else
+    {
 
-  configParser_p.reset();
+    }
+  }
+  sensorDataPtr.reset();
   // 1. get sensor data: accelerometers, touch panel.
   // 2. gestureClub invite gestures by data.
   // 3. all invited gestures takes action.

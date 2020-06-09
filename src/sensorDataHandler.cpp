@@ -48,54 +48,71 @@ SensorDataHandler::~SensorDataHandler()
 
 }
 
-void SensorDataHandler::processSensorData()
+bool SensorDataHandler::fillSensorData(std::shared_ptr<SensorData> sensorDataPtr)
 {
-  while (true)
+  int ret = -1;
+  bool isCollectDone = false;
+  if (m_sensorFds.size() > 0)
   {
-    int ret = -1;
-    if (m_sensorFds.size() > 0)
+    // TODO: got 2000 by config: ROTATION_INTERVAL
+    ret = poll(&m_sensorFds[0], 1, 2000);
+  }
+  
+  input_event inputEventData;
+  if (ret > 0)
+  {
+    if (m_sensorFds[0].revents)
     {
-      ret = poll(&m_sensorFds[0], 1, 2000);
-    }
-    input_event inputEventData;
-    auto orientation = getOrientation();
-    rotateScreen(orientation);
-    if (ret > 0)
-    {
-      if (m_sensorFds[0].revents)
+      ssize_t size = read(m_sensorFds[0].fd, &inputEventData, sizeof(inputEventData));
+      if (size >= 0)
       {
-        ssize_t size = read(m_sensorFds[0].fd, &inputEventData, sizeof(inputEventData));
-        if (size >= 0)
-        {
-          analyzeGesture(inputEventData);
-
-        }
+        isCollectDone = collectEventData(inputEventData, sensorDataPtr);
       }
     }
-    // error or timeout
-    else
+  }
+  // timeout
+  // It's suppose that screen should not be rotated by user.
+  else if (0 == ret)
+  {
+    sensorDataPtr->orientation = getOrientation();
+    isCollectDone = true;
+  }
+  // TODO: error
+  else
+  {
+
+  }
+
+  return isCollectDone;
+}
+
+bool SensorDataHandler::collectEventData(input_event& inputEventData, std::shared_ptr<SensorData> sensorDataPtr)
+{
+  // only care about ABS event.
+  if (EV_ABS != inputEventData.type)
+  {
+    return false;
+  }
+
+  if (ABS_MT_SLOT == inputEventData.code)
+  {
+    std::uint32_t fingerIndex = inputEventData.value;
+  }
+
+  if (ABS_MT_TRACKING_ID == inputEventData.code)
+  {
+    if (-1 == inputEventData.value)
     {
 
     }
+    else
+    {
+      sensorDataPtr->fingerNumber++;
+    }
+
   }
 
-}
-
-void SensorDataHandler::analyzeGesture(struct input_event& inputEventData)
-{
-
-}
-
-
-std::shared_ptr<SensorData> SensorDataHandler::getSensorData() const
-{
-  auto sensorData_p = std::make_shared<SensorData>();
-  sensorData_p->orientation = getOrientation();
-
-  auto orientation = getOrientation();
-  rotateScreen(orientation);
-
-  return sensorData_p;
+  return true;
 }
 
 Orientation SensorDataHandler::getOrientation() const
