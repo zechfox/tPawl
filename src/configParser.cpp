@@ -4,6 +4,8 @@
 /*
 /*===========================*/
 #include <iostream>
+#include <fstream>
+
 #include "configParser.h"
  
 using namespace std;
@@ -14,9 +16,22 @@ ConfigParser::ConfigParser(void)
   m_confData.accDevice = ACCELEROMETER_DEVICE;
   m_confData.accRawDataX = ACCELEROMETER_X_RAW_DATA;
   m_confData.accRawDataY = ACCELEROMETER_Y_RAW_DATA;
+  m_confData.accScale = ACCELEROMETER_SCALE;
   m_confData.monitorName = MONITOR_NAME;
-  m_confData.accRawDataFactor = ACCELEROMETER_RAW_DATA_FACTOR;
   m_confData.accThreshold = ACCELEROMETER_THRESHOLD;
+
+  std::ifstream accFactorStream;
+  std::string accFactorPath;
+  accFactorPath.append(m_confData.accPath);
+  accFactorPath.append(m_confData.accDevice);
+  accFactorPath.append(m_confData.accScale);
+  accFactorStream.open(accFactorPath, ios::in);
+  accFactorStream.clear();
+  accFactorStream.seekg(0);
+
+  accFactorStream >> m_confData.accRawDataFactor;
+  accFactorStream.close();
+
 }
 
 ConfigParser::~ConfigParser(void)

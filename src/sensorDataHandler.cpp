@@ -18,7 +18,7 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
   normalCommand << ROTATE_COMMAND << monitorName << " --rotate " << "normal";
   leftCommand << ROTATE_COMMAND << monitorName << " --rotate " << "left";
   rightCommand << ROTATE_COMMAND << monitorName << " --rotate " << "right";
-  invertCommand << ROTATE_COMMAND << monitorName << " --rotate " << "invert";
+  invertCommand << ROTATE_COMMAND << monitorName << " --rotate " << "inverted";
 
   m_rotateCommand[Orientation::NORMAL] = normalCommand.str();
   m_rotateCommand[Orientation::LEFT] = leftCommand.str();
@@ -52,21 +52,21 @@ Orientation SensorDataHandler::getOrientation() const
   double accelerometerDataX = data.x * m_accRawDataFactor;
   double accelerometerDataY = data.y * m_accRawDataFactor;
 
-  if (accelerometerDataX < m_accThreshold && accelerometerDataY < -m_accThreshold)
+  if (accelerometerDataY < -m_accThreshold)
   {
-    orientation = Orientation::NORMAL; /* 0 is normal orientation */
+    orientation = Orientation::INVERT;
   }
-  else if (accelerometerDataX > m_accThreshold && accelerometerDataY < m_accThreshold)
+  else if (accelerometerDataX > m_accThreshold)
   {
-    orientation = Orientation::RIGHT; /* 1 is rotated right*/
+    orientation = Orientation::LEFT;
   }
-  else if (accelerometerDataX < m_accThreshold && accelerometerDataY > m_accThreshold)
+  else if (accelerometerDataY > m_accThreshold)
   {
-    orientation = Orientation::INVERT; /* 2 is upside down*/
+    orientation = Orientation::NORMAL;
   }
-  else if (accelerometerDataX < -m_accThreshold && accelerometerDataY < m_accThreshold)
+  else if (accelerometerDataX < -m_accThreshold)
   {
-    orientation = Orientation::LEFT; /* 3 is rotated left*/
+    orientation = Orientation::RIGHT;
   }
 
   return orientation;
