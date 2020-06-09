@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <math.h>
+#include <poll.h>
 #include <fstream>
 #include <map>
  
@@ -107,20 +108,24 @@ class SensorDataHandler
   public:
     SensorDataHandler(std::string& monitorName,
                       float accRawDataFactor,
-                      float accThreshold);
+                      float accThreshold,
+                      std::string& touchScreenDevPath);
     ~SensorDataHandler();
 
     std::shared_ptr<SensorData> getSensorData() const;
     void registerTouchPanelDevice(std::shared_ptr<TouchPanelDevice> touchPanelPtr);
     void registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr);
+    void processSensorData();
 
   private:
     Orientation getOrientation() const;
     void rotateScreen(Orientation orientation) const;
+    void analyzeGesture(struct input_event& inputEventData);
     std::shared_ptr<TouchPanelDevice> m_touchPanel_p;
     std::shared_ptr<Accelerometer> m_accelerometer_p;
     std::map<Orientation, std::string> m_rotateCommand;
     float m_accRawDataFactor;
     float m_accThreshold;
+    std::vector<pollfd> m_sensorFds;
 };
 

@@ -19,6 +19,7 @@ ConfigParser::ConfigParser(void)
   m_confData.accScale = ACCELEROMETER_SCALE;
   m_confData.monitorName = MONITOR_NAME;
   m_confData.accThreshold = ACCELEROMETER_THRESHOLD;
+  m_confData.tsDevPath = TOUCHSCREEN_DEVICE_PATH;
 
   std::ifstream accFactorStream;
   std::string accFactorPath;

@@ -15,7 +15,8 @@ int main()
   auto gestureClub_p = std::make_shared<GestureClub>();
   auto sensorDataHandler_p = std::make_shared<SensorDataHandler>(confData.monitorName,
                                                                  confData.accRawDataFactor,
-                                                                 confData.accThreshold);
+                                                                 confData.accThreshold,
+                                                                 confData.tsDevPath);
   auto accelerometer_p = std::make_shared<Accelerometer>(confData.accPath,
                                                          confData.accDevice,
                                                          confData.accRawDataX,
