@@ -15,7 +15,8 @@ using namespace std;
 #define ACCELEROMETER_RAW_DATA_FACTOR (0.000009806)
 #define ACCELEROMETER_THRESHOLD (7.0)
 
-#define TOUCHSCREEN_DEVICE_PATH "/dev/input/xxxx"
+#define TOUCHSCREEN_DEVICE_PATH "/dev/input/event20"
+#define TOUCHSCREEN_DEVICE_NAME "silead_ts"
 #define MONITOR_NAME "DSI-1"
 
 struct ConfigurationData
@@ -27,6 +28,7 @@ struct ConfigurationData
   std::string monitorName;
   std::string accScale;
   std::string tsDevPath;
+  std::string tsDevName;
   float accRawDataFactor;
   float accThreshold;
 };

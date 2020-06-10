@@ -17,7 +17,7 @@ using namespace std;
 SensorDataHandler::SensorDataHandler(std::string& monitorName,
                                      float accRawDataFactor,
                                      float accThreshold,
-                                     std::string& touchScreenDevPath)
+                                     std::string& touchScreenDevName)
 {
   std::ostringstream normalCommand, leftCommand, rightCommand, invertCommand;
   normalCommand << ROTATE_COMMAND << monitorName << " --rotate " << "normal";
@@ -33,13 +33,20 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
   m_accRawDataFactor = accRawDataFactor;
   m_accThreshold = accThreshold;
 
+  std::string tsDevPath = getTouchScreenDevicePath(touchScreenDevName);
+  cout << "TouchScreen Path:" << tsDevPath << endl;
+  
   pollfd tmpFd;
-  tmpFd.fd = open(touchScreenDevPath.c_str(), O_RDONLY | O_NONBLOCK);
+  tmpFd.fd = open(tsDevPath.c_str(), O_RDONLY | O_NONBLOCK);
   if (tmpFd.fd > 0)
   {
     tmpFd.events = POLLIN;
     tmpFd.revents = 0;
     m_sensorFds.push_back(tmpFd);
+  }
+  else
+  {
+    cout << "Failed to open touch screen device." << endl;
   }
 }
 
@@ -47,7 +54,49 @@ SensorDataHandler::~SensorDataHandler()
 {
 
 }
+// TODO: optimize
+std::string SensorDataHandler::getTouchScreenDevicePath(std::string& touchScreenDevName)
+{
+  std::ifstream procDevices;
+  std::string line;
+  std::ostringstream touchScreenDevPath;
+  std::string eventName;
+  bool findTouchScreen = false;
+  procDevices.open("/proc/bus/input/devices", ios::in);
+  while (std::getline(procDevices, line) && eventName.empty())
+  {
+    std::istringstream ss(line);
+    std::string word;
+    while (std::getline(ss, word, '='))
+    {
+      
+      if (findTouchScreen)
+      {
+        std::istringstream itemValue(word);
+        std::string value;
+        while (std::getline(itemValue, value, ' '))
+        {
+          if (std::string::npos != value.find("event"))
+          {
+            eventName = value;
+            break;
+          }
+        }
+      }
+      else if (std::string::npos != word.find(touchScreenDevName))
+      {
+        findTouchScreen = true;
+        break;
+      }
+    }
+  }
 
+  procDevices.close();
+  touchScreenDevPath << "/dev/input/" << eventName ;
+  return touchScreenDevPath.str();
+
+
+}
 bool SensorDataHandler::fillSensorData(std::shared_ptr<SensorData> sensorDataPtr)
 {
   int ret = -1;
@@ -96,23 +145,48 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, std::share
 
   if (ABS_MT_SLOT == inputEventData.code)
   {
-    std::uint32_t fingerIndex = inputEventData.value;
+    if (m_slotSpace.currentSlotNumber != inputEventData.value)
+    {
+      // save old slot data
+      CoordinatorData data{m_slotSpace.positionX, m_slotSpace.positionY};
+      sensorDataPtr->coordinatorsData[m_slotSpace.currentSlotNumber].push_back(data);
+      // switch to new slot
+      m_slotSpace.currentSlotNumber = inputEventData.value;
+    }
+  }
+
+  if (ABS_MT_POSITION_X == inputEventData.code)
+  {
+    m_slotSpace.positionX = inputEventData.value;
+  }
+
+  if (ABS_MT_POSITION_Y == inputEventData.code)
+  {
+    m_slotSpace.positionY = inputEventData.value;
   }
 
   if (ABS_MT_TRACKING_ID == inputEventData.code)
   {
+    // 1 finger left screen
     if (-1 == inputEventData.value)
     {
-
+      m_slotSpace.activatedSlots.erase(m_slotSpace.currentSlotNumber);
+      m_slotSpace.currentSlotNumber = -1;
+      // all finger left screen
+      if (m_slotSpace.activatedSlots.empty())
+      {
+        return true;
+      }
     }
     else
     {
-      sensorDataPtr->fingerNumber++;
+      m_slotSpace.activatedSlots[m_slotSpace.currentSlotNumber] = inputEventData.value;
+      sensorDataPtr->fingerNumber = m_slotSpace.activatedSlots.size();
     }
 
   }
 
-  return true;
+  return false;
 }
 
 Orientation SensorDataHandler::getOrientation() const
@@ -146,6 +220,8 @@ void SensorDataHandler::rotateScreen(Orientation orientation) const
 {
   std::string command = m_rotateCommand.at(orientation);
   system(command.c_str());
+  // TODO: map input to output:
+  // xinput --map-to-output "pointer:silead_ts" DSI-1
 }
 
 void SensorDataHandler::registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr)

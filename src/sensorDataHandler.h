@@ -16,8 +16,8 @@ using namespace std;
 #define ROTATE_COMMAND "xrandr --output "
 struct CoordinatorData
 {
-  std::uint32_t x;
-  std::uint32_t y;
+  std::int32_t x;
+  std::int32_t y;
 };
 
 enum class Orientation
@@ -61,8 +61,8 @@ class Accelerometer
 
     CoordinatorData read()
     {
-      std::uint32_t xRawData = 0;
-      std::uint32_t yRawData = 0;
+      std::int32_t xRawData = 0;
+      std::int32_t yRawData = 0;
       if (m_accRawDataX)
       {
         m_accRawDataX.clear();
@@ -103,13 +103,22 @@ struct SensorData
   std::map<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData;
 };
 
+struct SlotSpace
+{
+  std::int32_t currentSlotNumber;
+  std::int32_t positionX;
+  std::int32_t positionY;
+  // slotNumber -> trackId
+  std::map<std::int32_t, std::int32_t> activatedSlots;
+};
+
 class SensorDataHandler
 {
   public:
     SensorDataHandler(std::string& monitorName,
                       float accRawDataFactor,
                       float accThreshold,
-                      std::string& touchScreenDevPath);
+                      std::string& touchScreenDevName);
     ~SensorDataHandler();
 
     bool fillSensorData(std::shared_ptr<SensorData> sensorDataPtr);
@@ -119,9 +128,11 @@ class SensorDataHandler
   private:
     Orientation getOrientation() const;
     bool collectEventData(struct input_event& inputEventData, std::shared_ptr<SensorData> sensorDataPtr);
+    std::string getTouchScreenDevicePath(std::string& touchScreenName);
     std::shared_ptr<TouchPanelDevice> m_touchPanel_p;
     std::shared_ptr<Accelerometer> m_accelerometer_p;
     std::map<Orientation, std::string> m_rotateCommand;
+    SlotSpace m_slotSpace;
     float m_accRawDataFactor;
     float m_accThreshold;
     std::vector<pollfd> m_sensorFds;

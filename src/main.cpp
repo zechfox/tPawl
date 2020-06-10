@@ -9,14 +9,14 @@ using namespace std;
 
 int main()
 {
-  cout << "Hello, world" << endl;
+  cout << "Touch Pawl Start!" << endl;
   std::shared_ptr<ConfigParser> configParserPtr = std::make_shared<ConfigParser>();
   ConfigurationData confData = configParserPtr->parseConfig();
   auto gestureClubPtr = std::make_shared<GestureClub>();
   auto sensorDataHandlerPtr = std::make_shared<SensorDataHandler>(confData.monitorName,
                                                                   confData.accRawDataFactor,
                                                                   confData.accThreshold,
-                                                                  confData.tsDevPath);
+                                                                  confData.tsDevName);
   auto accelerometerPtr = std::make_shared<Accelerometer>(confData.accPath,
                                                           confData.accDevice,
                                                           confData.accRawDataX,
@@ -35,6 +35,8 @@ int main()
         sensorDataHandlerPtr->rotateScreen(sensorDataPtr->orientation);
         orientation = sensorDataPtr->orientation;
       }
+      cout << "Finger Number:" << sensorDataPtr->fingerNumber << endl;
+      sensorDataPtr->fingerNumber = 0;
     }
     // TODO:exception 
     else
