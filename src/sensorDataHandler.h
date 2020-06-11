@@ -10,7 +10,7 @@
 #include <poll.h>
 #include <fstream>
 #include <map>
- 
+#pragma once 
 using namespace std;
 
 #define ROTATE_COMMAND "xrandr --output "
@@ -98,7 +98,7 @@ class Accelerometer
 
 struct SensorData
 {
-  std::int32_t fingerNumber;
+  std::uint32_t fingerNumber;
   Orientation orientation;
   std::map<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData;
 };
@@ -121,13 +121,13 @@ class SensorDataHandler
                       std::string& touchScreenDevName);
     ~SensorDataHandler();
 
-    bool fillSensorData(std::shared_ptr<SensorData> sensorDataPtr);
+    bool fillSensorData(SensorData& sensorData);
     void registerTouchPanelDevice(std::shared_ptr<TouchPanelDevice> touchPanelPtr);
     void registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr);
     void rotateScreen(Orientation orientation) const;
   private:
     Orientation getOrientation() const;
-    bool collectEventData(struct input_event& inputEventData, std::shared_ptr<SensorData> sensorDataPtr);
+    bool collectEventData(struct input_event& inputEventData, SensorData& sensorDataPtr);
     std::string getTouchScreenDevicePath(std::string& touchScreenName);
     std::shared_ptr<TouchPanelDevice> m_touchPanel_p;
     std::shared_ptr<Accelerometer> m_accelerometer_p;

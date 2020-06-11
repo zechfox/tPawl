@@ -22,21 +22,31 @@ int main()
                                                           confData.accRawDataX,
                                                           confData.accRawDataY);
   sensorDataHandlerPtr->registerAccelerometer(accelerometerPtr);
+  gestureClubPtr->registerMembers(confData.gestures);
   configParserPtr.reset();
 
-  std::shared_ptr<SensorData> sensorDataPtr = std::make_shared<SensorData>();
+  SensorData sensorData;
+  sensorData.fingerNumber = 0;
   auto orientation = Orientation::NORMAL;
   while (true)
   {
-    if (sensorDataHandlerPtr->fillSensorData(sensorDataPtr))
+    if (sensorDataHandlerPtr->fillSensorData(sensorData))
     {
-      if (orientation != sensorDataPtr->orientation)
+      if (orientation != sensorData.orientation)
       {
-        sensorDataHandlerPtr->rotateScreen(sensorDataPtr->orientation);
-        orientation = sensorDataPtr->orientation;
+        sensorDataHandlerPtr->rotateScreen(sensorData.orientation);
+        orientation = sensorData.orientation;
       }
-      cout << "Finger Number:" << sensorDataPtr->fingerNumber << endl;
-      sensorDataPtr->fingerNumber = 0;
+      cout << "Finger Number:" << sensorData.fingerNumber << endl;
+      if (sensorData.fingerNumber > 0)
+      {
+        std::vector<std::shared_ptr<Gesture>> invitedGestures = gestureClubPtr->inviteMembers(sensorData);
+        for (auto gesture : invitedGestures)
+        {
+          gesture->performAction();
+        }
+      }
+      sensorData.fingerNumber = 0;
     }
     // TODO:exception 
     else
@@ -44,7 +54,6 @@ int main()
 
     }
   }
-  sensorDataPtr.reset();
   // 1. get sensor data: accelerometers, touch panel.
   // 2. gestureClub invite gestures by data.
   // 3. all invited gestures takes action.

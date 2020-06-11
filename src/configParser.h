@@ -3,7 +3,10 @@
 /*
 /*
 /*===========================*/
+#pragma once
+
 #include <iostream>
+#include <vector>
  
 using namespace std;
 
@@ -19,6 +22,28 @@ using namespace std;
 #define TOUCHSCREEN_DEVICE_NAME "silead_ts"
 #define MONITOR_NAME "DSI-1"
 
+enum class Evidence
+{
+  MOVE_UP,
+  MOVE_DOWN,
+  MOVE_LEFT,
+  MOVE_RIGHT,
+  MOVE_TOP,
+  MOVE_BOTTOM,
+  MOVE_LEFT_SIDE,
+  MOVE_RIGHT_SIDE,
+  ENLARGE,
+  SHRINK,
+  NOT_AVALIABLE
+};
+
+struct GestureData
+{
+  std::uint32_t touchPointNumber;
+  Evidence evidence;
+  std::string action;
+};
+
 struct ConfigurationData
 {
   std::string accPath;
@@ -31,6 +56,7 @@ struct ConfigurationData
   std::string tsDevName;
   float accRawDataFactor;
   float accThreshold;
+  std::vector<GestureData> gestures;
 };
 
 class ConfigParser

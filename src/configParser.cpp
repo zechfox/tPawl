@@ -34,6 +34,12 @@ ConfigParser::ConfigParser(void)
   accFactorStream >> m_confData.accRawDataFactor;
   accFactorStream.close();
 
+  GestureData gesture1;
+  gesture1.touchPointNumber = 2;
+  gesture1.evidence = Evidence::MOVE_UP;
+  gesture1.action = "echo \"2 finger action\"";
+  m_confData.gestures.push_back(gesture1);
+
 }
 
 ConfigParser::~ConfigParser(void)

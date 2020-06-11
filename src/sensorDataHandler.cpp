@@ -54,7 +54,7 @@ SensorDataHandler::~SensorDataHandler()
 {
 
 }
-// TODO: optimize
+// TODO: more elegant way.
 std::string SensorDataHandler::getTouchScreenDevicePath(std::string& touchScreenDevName)
 {
   std::ifstream procDevices;
@@ -97,7 +97,8 @@ std::string SensorDataHandler::getTouchScreenDevicePath(std::string& touchScreen
 
 
 }
-bool SensorDataHandler::fillSensorData(std::shared_ptr<SensorData> sensorDataPtr)
+
+bool SensorDataHandler::fillSensorData(SensorData& sensorData)
 {
   int ret = -1;
   bool isCollectDone = false;
@@ -115,7 +116,7 @@ bool SensorDataHandler::fillSensorData(std::shared_ptr<SensorData> sensorDataPtr
       ssize_t size = read(m_sensorFds[0].fd, &inputEventData, sizeof(inputEventData));
       if (size >= 0)
       {
-        isCollectDone = collectEventData(inputEventData, sensorDataPtr);
+        isCollectDone = collectEventData(inputEventData, sensorData);
       }
     }
   }
@@ -123,7 +124,7 @@ bool SensorDataHandler::fillSensorData(std::shared_ptr<SensorData> sensorDataPtr
   // It's suppose that screen should not be rotated by user.
   else if (0 == ret)
   {
-    sensorDataPtr->orientation = getOrientation();
+    sensorData.orientation = getOrientation();
     isCollectDone = true;
   }
   // TODO: error
@@ -135,7 +136,7 @@ bool SensorDataHandler::fillSensorData(std::shared_ptr<SensorData> sensorDataPtr
   return isCollectDone;
 }
 
-bool SensorDataHandler::collectEventData(input_event& inputEventData, std::shared_ptr<SensorData> sensorDataPtr)
+bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData& sensorData)
 {
   // only care about ABS event.
   if (EV_ABS != inputEventData.type)
@@ -149,7 +150,7 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, std::share
     {
       // save old slot data
       CoordinatorData data{m_slotSpace.positionX, m_slotSpace.positionY};
-      sensorDataPtr->coordinatorsData[m_slotSpace.currentSlotNumber].push_back(data);
+      sensorData.coordinatorsData[m_slotSpace.currentSlotNumber].push_back(data);
       // switch to new slot
       m_slotSpace.currentSlotNumber = inputEventData.value;
     }
@@ -171,7 +172,6 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, std::share
     if (-1 == inputEventData.value)
     {
       m_slotSpace.activatedSlots.erase(m_slotSpace.currentSlotNumber);
-      m_slotSpace.currentSlotNumber = -1;
       // all finger left screen
       if (m_slotSpace.activatedSlots.empty())
       {
@@ -181,7 +181,7 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, std::share
     else
     {
       m_slotSpace.activatedSlots[m_slotSpace.currentSlotNumber] = inputEventData.value;
-      sensorDataPtr->fingerNumber = m_slotSpace.activatedSlots.size();
+      sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
     }
 
   }
