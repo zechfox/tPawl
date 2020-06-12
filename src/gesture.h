@@ -11,20 +11,43 @@
 
 using namespace std;
 
+enum class Direction
+{
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT
+};
+
 class Gesture
 {
   public:
     Gesture(GestureData& gestureData);
     ~Gesture();
 
+    typedef bool (Gesture::*checkerFuncPtr)(SensorData&);
+
     bool invite(SensorData& sensorData);
     bool performAction(void);
 
-    static bool isMoveUp(SensorData& sensorData);
+
   private:
+    bool isMoveUp(SensorData& sensorData);
+    bool isMoveDown(SensorData& sensorData);
+    bool isMoveLeft(SensorData& sensorData);
+    bool isMoveRight(SensorData& sensorData);
+    bool isEnlarged(SensorData& sensorData);
+    bool isShrinked(SensorData& sensorData);
+
+    bool movementChecker(SensorData& sensorData);
+    bool distanceChecker(SensorData& sensorData);
+    std::int32_t convertOrientation(Orientation orientation);
+    std::int32_t convertMovementEvidence(Evidence evidence);
+
+    checkerFuncPtr assignChecker(Evidence evidence);
     std::uint32_t m_touchPointNumber;
     Evidence m_evidence;
     std::string m_action;
-    std::function<bool(SensorData&)> m_evidenceChecker;
+    checkerFuncPtr m_evidenceChecker;
 
 };

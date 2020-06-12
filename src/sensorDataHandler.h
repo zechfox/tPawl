@@ -93,7 +93,6 @@ class Accelerometer
     std::string m_accPathY;
     std::ifstream m_accRawDataX;
     std::ifstream m_accRawDataY;
-
 };
 
 struct SensorData

@@ -24,6 +24,7 @@ using namespace std;
 
 enum class Evidence
 {
+  // modify Gesture::assignCheck if add item
   MOVE_UP,
   MOVE_DOWN,
   MOVE_LEFT,
