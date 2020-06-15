@@ -90,8 +90,10 @@ Gesture::checkerFuncPtr Gesture::assignChecker(Evidence evidence)
       checkerPtr = &Gesture::movementChecker;
       break;
     case Evidence::ENLARGE:  
+      checkerPtr = &Gesture::isEnlarged;
+      break;
     case Evidence::SHRINK:
-      checkerPtr = &Gesture::distanceChecker;
+      checkerPtr = &Gesture::isShrinked;
       break;
     default:
       checkerPtr = &Gesture::movementChecker;
@@ -123,12 +125,6 @@ bool Gesture::movementChecker(SensorData& sensorData)
       break;
   }
   return ret;
-}
-
-bool Gesture::distanceChecker(SensorData& sensorData)
-{
-
-  return true;
 }
 
 // TODO: most of movement code was same,

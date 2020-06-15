@@ -40,7 +40,6 @@ class Gesture
     bool isShrinked(SensorData& sensorData);
 
     bool movementChecker(SensorData& sensorData);
-    bool distanceChecker(SensorData& sensorData);
     std::int32_t convertOrientation(Orientation orientation);
     std::int32_t convertMovementEvidence(Evidence evidence);
 
