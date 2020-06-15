@@ -295,8 +295,33 @@ bool Gesture::isMoveRight(SensorData& sensorData)
 
 bool Gesture::isEnlarged(SensorData& sensorData)
 {
+  std::int32_t smallDistance = 0;
+  auto isShrink = [&] (CoordinatorData &first, CoordinatorData &second) {
+    std::int32_t distance = first.x - second.x + first.y - second.y;
+    if (distance < smallDistance)
+    {
+      distance = smallDistance;
+      return true;
+    }
+    return false;
+  };
+
+  auto isShrinkedVec = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> first,
+                            std::pair<std::uint32_t, std::vector<CoordinatorData>> second) {
+    return std::equal(first.second.begin(), first.second.end(), second.second.begin(), second.second.end(), isShrink);
+  };
+
+  // find coordinatorsData that shrinked.
+  auto iter = std::adjacent_find(sensorData.coordinatorsData.begin(),
+                                 sensorData.coordinatorsData.end(),
+                                 isShrinkedVec);
+
+  return (iter == sensorData.coordinatorsData.end());
+}
+
+bool Gesture::isShrinked(SensorData& sensorData)
+{
   std::int32_t largeDistance = 0;
-  std::vector<bool> distanceResult;
   auto isEnlarge = [&] (CoordinatorData &first, CoordinatorData &second) {
     std::int32_t distance = first.x - second.x + first.y - second.y;
     if (distance > largeDistance)
@@ -306,36 +331,18 @@ bool Gesture::isEnlarged(SensorData& sensorData)
     }
     return false;
   };
-  auto isEnlargedVec = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> *coordinatorsDataPtr) {
-    std::vector<CoordinatorData>& first = coordinatorsDataPtr->second;
-    std::vector<CoordinatorData>& second = (coordinatorsDataPtr++)->second;
-    return std::equal(first.begin(), first.end(), second.begin(), second.end(), isEnlarge);
-  };
-  auto extractVector = [=] (std::pair<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData) {
-    return coordinatorsData.second;
+
+  auto isEnlargedVec = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> first,
+                            std::pair<std::uint32_t, std::vector<CoordinatorData>> second) {
+    return std::equal(first.second.begin(), first.second.end(), second.second.begin(), second.second.end(), isEnlarge);
   };
 
-  for (auto itr = sensorData.coordinatorsData.begin();itr != sensorData.coordinatorsData.end();++itr)
-  {
+  // find coordinatorsData that enlarged.
+  auto iter = std::adjacent_find(sensorData.coordinatorsData.begin(),
+                                 sensorData.coordinatorsData.end(),
+                                 isEnlargedVec);
 
-  }
-    
-    /*
-  calcDistance(sensorData.coordinatorsData.at(0).at(0),
-               sensorData.coordinatorsData.at(1).at(0));
-
-  std::exclusive_scan(sensorData.coordinatorsData.begin(),
-                      sensorData.coordinatorsData.end(),
-                      distanceResult.begin(), 1,
-                      isEnlargedVec);
-
-               */
-  return true;
-}
-
-bool Gesture::isShrinked(SensorData& sensorData)
-{
-  return true;
+  return (iter == sensorData.coordinatorsData.end());
 }
 
 bool Gesture::performAction(void)
