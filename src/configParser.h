@@ -22,6 +22,8 @@ using namespace std;
 #define TOUCHSCREEN_DEVICE_NAME "silead_ts"
 #define MONITOR_NAME "DSI-1"
 
+#define LOG_FILE "/var/log/tPawl.log"
+
 enum class Evidence
 {
   // modify Gesture::assignCheck if add item
@@ -55,6 +57,7 @@ struct ConfigurationData
   std::string accScale;
   std::string tsDevPath;
   std::string tsDevName;
+  std::string logFile;
   float accRawDataFactor;
   float accThreshold;
   std::vector<GestureData> gestures;

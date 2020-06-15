@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/input.h>
+#include "log.h"
 #include "sensorDataHandler.h"
  
 using namespace std;
@@ -34,7 +35,7 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
   m_accThreshold = accThreshold;
 
   std::string tsDevPath = getTouchScreenDevicePath(touchScreenDevName);
-  cout << "TouchScreen Path:" << tsDevPath << endl;
+  LOG("TouchScreen Path:" << tsDevPath);
   
   pollfd tmpFd;
   tmpFd.fd = open(tsDevPath.c_str(), O_RDONLY | O_NONBLOCK);
@@ -46,7 +47,7 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
   }
   else
   {
-    cout << "Failed to open touch screen device." << endl;
+    LOG("Failed to open touch screen device.");
   }
 }
 

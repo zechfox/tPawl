@@ -40,6 +40,8 @@ ConfigParser::ConfigParser(void)
   gesture1.action = "echo \"2 finger action\"";
   m_confData.gestures.push_back(gesture1);
 
+  m_confData.logFile = LOG_FILE;
+
 }
 
 ConfigParser::~ConfigParser(void)

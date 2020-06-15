@@ -1,6 +1,8 @@
 #include <iostream>
+#include <fstream>
 #include <memory>
 
+#include "log.h"
 #include "configParser.h"
 #include "gestureClub.h"
 #include "sensorDataHandler.h"
@@ -9,9 +11,18 @@ using namespace std;
 
 int main()
 {
-  cout << "Touch Pawl Start!" << endl;
   std::shared_ptr<ConfigParser> configParserPtr = std::make_shared<ConfigParser>();
   ConfigurationData confData = configParserPtr->parseConfig();
+
+  std::streambuf *newStdOut, *backupStdOut;
+  std::ofstream logFileStream;
+  logFileStream.open(confData.logFile.c_str(), std::ofstream::trunc);
+  backupStdOut = std::cout.rdbuf();
+  newStdOut = logFileStream.rdbuf();
+  std::cout.rdbuf(newStdOut);
+
+  LOG("Touch Pawl Start!");
+
   auto gestureClubPtr = std::make_shared<GestureClub>();
   auto sensorDataHandlerPtr = std::make_shared<SensorDataHandler>(confData.monitorName,
                                                                   confData.accRawDataFactor,
@@ -37,7 +48,7 @@ int main()
         sensorDataHandlerPtr->rotateScreen(sensorData.orientation);
         orientation = sensorData.orientation;
       }
-      cout << "Finger Number:" << sensorData.fingerNumber << endl;
+      LOG("Finger Number:" << sensorData.fingerNumber);
       if (sensorData.fingerNumber > 0)
       {
         std::vector<std::shared_ptr<Gesture>> invitedGestures = gestureClubPtr->inviteMembers(sensorData);
@@ -54,6 +65,10 @@ int main()
 
     }
   }
+
+  std::cout.rdbuf(backupStdOut);
+  logFileStream.close();
+
   // 1. get sensor data: accelerometers, touch panel.
   // 2. gestureClub invite gestures by data.
   // 3. all invited gestures takes action.

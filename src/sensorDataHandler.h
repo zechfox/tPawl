@@ -10,6 +10,8 @@
 #include <poll.h>
 #include <fstream>
 #include <map>
+
+#include "log.h"
 #pragma once 
 using namespace std;
 
@@ -71,7 +73,7 @@ class Accelerometer
       }
       else
       {
-        cout << "Open Accelerometer X Failed." << endl;
+        LOG("Open Accelerometer X Failed.");
       }
 
       if (m_accRawDataY)
@@ -82,7 +84,7 @@ class Accelerometer
       }
       else
       {
-        cout << "Open Accelerometer Y Failed." << endl;
+        LOG("Open Accelerometer Y Failed.");
       }
 
       CoordinatorData data{xRawData, yRawData};
