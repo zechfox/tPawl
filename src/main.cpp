@@ -74,6 +74,8 @@ int main()
     }
   }
 
+
+  LOG("Bye!");
   std::cout.rdbuf(backupStdOut);
   logFileStream.close();
 
