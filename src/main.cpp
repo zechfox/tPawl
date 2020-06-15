@@ -2,12 +2,19 @@
 #include <fstream>
 #include <memory>
 
+#include <signal.h>
+
 #include "log.h"
 #include "configParser.h"
 #include "gestureClub.h"
 #include "sensorDataHandler.h"
 
 using namespace std;
+bool g_isQuit = false;
+void signal_handle(int signal_num)
+{
+  g_isQuit = true;
+}
 
 int main()
 {
@@ -22,6 +29,7 @@ int main()
   std::cout.rdbuf(newStdOut);
 
   LOG("Touch Pawl Start!");
+  signal(SIGINT, signal_handle);
 
   auto gestureClubPtr = std::make_shared<GestureClub>();
   auto sensorDataHandlerPtr = std::make_shared<SensorDataHandler>(confData.monitorName,
@@ -39,7 +47,7 @@ int main()
   SensorData sensorData;
   sensorData.fingerNumber = 0;
   auto orientation = Orientation::NORMAL;
-  while (true)
+  while (!g_isQuit)
   {
     if (sensorDataHandlerPtr->fillSensorData(sensorData))
     {
