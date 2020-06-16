@@ -60,6 +60,8 @@ bool ConfigParser::readConfigFile(const std::string& confFilePath)
   if (fileStream.is_open())
   {
     std::string line;
+    std::vector<std::string&> configGroup;
+    std::string groupName;
     while(getline(fileStream, line)){
       // Remove comment Lines
       std::size_t found = line.find_first_of('#');
@@ -70,26 +72,62 @@ bool ConfigParser::readConfigFile(const std::string& confFilePath)
       if(configData.empty())
          continue;
 
-      std::string tag, value;
-      std::uint32_t length = configData.find(delimeter);
-      if (length != string::npos)
+      std::size_t groupNameBegin = configData.find_first_of('[');
+      std::size_t groupNameEnd = configData.find_first_of(']');
+      if (groupNameBegin >= 0 && groupNameEnd > 0)
       {
-         tag = configData.substr(initPos, length);
-         value = configData.substr(length+1);
+        std::string newGroupName = configData.substr(groupNameBegin, groupNameEnd);
+        if (groupName != newGroupName)
+        {
+          dumpGroupConfig(groupName, configGroup);
+          groupName = newGroupName;
+          configGroup.clear();
+        }
+        continue;
       }
-      // Trim white spaces
-      tag = reduce(tag, " ", " \t");
-      value = reduce(value, " ", " \t");
-      if (tag.empty() || value.empty())
-         continue;
-
-      // override old one.
-      m_confSettingMap[tag] = value;
+      configGroup.push_back(configData);
     }
-
   }
 
   return true;
+}
+
+void ConfigParser::dumpGroupConfig(const std::string& groupName, const std::vector<std::string&> configGroup)
+{
+  if ("General" == groupName)
+  {
+    parseGeneralConfig(configGroup);
+  }
+  else if ("Gesture" == groupName)
+  {
+    parseGestureConfig(configGroup);
+  }
+  std::string tag, value;
+  std::uint32_t length = configData.find(delimeter);
+  if (length != string::npos)
+  {
+    tag = configData.substr(initPos, length);
+    value = configData.substr(length+1);
+  }
+  // Trim white spaces
+  tag = reduce(tag, " ", " \t");
+  value = reduce(value, " ", " \t");
+  if (tag.empty() || value.empty())
+    continue;
+
+  // override old one.
+  m_confSettingMap[tag] = value;
+
+}
+
+void ConfigParser::parseGeneralConfig(const std::vector<std::string&> configData)
+{
+
+}
+
+void ConfigParser::parseGestureConfig(const std::vector<std::string&> configData)
+{
+
 }
 
 std::string ConfigParser::trim(const std::string& str, const std::string& whitespace) const
