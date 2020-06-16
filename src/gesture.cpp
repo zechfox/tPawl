@@ -28,8 +28,11 @@ Gesture::~Gesture()
 
 bool Gesture::invite(SensorData& sensorData)
 {
-
-  return true;
+  if (m_evidenceChecker)
+  {
+    return std::invoke(m_evidenceChecker, this, sensorData);
+  }
+  return false;
 }
 
 std::int32_t Gesture::convertOrientation(Orientation orientation)
