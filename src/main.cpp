@@ -18,7 +18,8 @@ void signal_handle(int signal_num)
 
 int main()
 {
-  std::shared_ptr<ConfigParser> configParserPtr = std::make_shared<ConfigParser>();
+  const std::string confPath = std::string("~/.config/tPawl.conf");
+  std::shared_ptr<ConfigParser> configParserPtr = std::make_shared<ConfigParser>(confPath);
   ConfigurationData confData = configParserPtr->parseConfig();
 
   std::streambuf *newStdOut, *backupStdOut;

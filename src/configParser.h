@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
  
 using namespace std;
 
@@ -66,11 +67,17 @@ struct ConfigurationData
 class ConfigParser
 {
   public:
-    ConfigParser();
+    ConfigParser(const std::string& confFilePath);
     ~ConfigParser();
 
     ConfigurationData& parseConfig();
   private:
+    bool readConfigFile(const std::string& confFilePath);
+    std::string trim(const std::string& str, const std::string& whitespace) const;
+    std::string reduce(const std::string& str,
+                       const std::string& fill,
+                       const std::string& whitespace) const;
     ConfigurationData m_confData;
+    std::map<std::string, std::string> m_confSettingMap;
 
 };
