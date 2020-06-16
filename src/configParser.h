@@ -77,6 +77,12 @@ class ConfigParser
     std::string reduce(const std::string& str,
                        const std::string& fill,
                        const std::string& whitespace) const;
+    void parseGeneralConfig(const std::vector<std::string> configData);
+    void parseGestureConfig(const std::vector<std::string> configData);
+    std::pair<std::string, std::string> getConfigPair(const std::string& config);
+
+    void dumpGroupConfig(const std::string& groupName, const std::vector<std::string> configGroup);
+    Evidence convertToEvidence(const std::string& str);
     ConfigurationData m_confData;
     std::map<std::string, std::string> m_confSettingMap;
 
