@@ -166,6 +166,12 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
     }
   }
 
+  // Ignore if no slot was got.
+  if (-1 == m_slotSpace.currentSlotNumber)
+  {
+    return false;
+  }
+
   if (ABS_MT_POSITION_X == inputEventData.code)
   {
     m_slotSpace.positionX = inputEventData.value;
@@ -189,7 +195,7 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
         return true;
       }
     }
-    else if (-1 != m_slotSpace.currentSlotNumber)
+    else
     {
       m_slotSpace.activatedSlots[m_slotSpace.currentSlotNumber] = inputEventData.value;
       sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
