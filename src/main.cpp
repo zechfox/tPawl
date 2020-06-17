@@ -16,11 +16,32 @@ void signal_handle(int signal_num)
   g_isQuit = true;
 }
 
+void dumpConfig(ConfigurationData& confData)
+{
+  LOG("monitorName: " << confData.monitorName);
+  LOG("accDevice: " << confData.accDevice);
+  LOG("accRawDataX: " << confData.accRawDataX);
+  LOG("accRawDataY: " << confData.accRawDataY);
+  LOG("accRawDataFactor: " << confData.accRawDataFactor);
+  LOG("accThreshold: " << confData.accThreshold);
+  LOG("TouchScreenDeviceName: " << confData.tsDevName);
+  LOG("accPath: " << confData.accPath);
+
+  for(auto gesture : confData.gestures)
+  {
+    LOG("Gesture touchPointerNumber: " << gesture.touchPointNumber);
+   // LOG("Gesture evidence: " << gesture.evidence);
+    LOG("Gesture action: " << gesture.action);
+  }
+
+}
+
 int main()
 {
-  const std::string confPath = std::string("~/.config/tPawl.conf");
+  const std::string confPath = std::string("/home/zechfox/.config/tPawl.conf");
   std::shared_ptr<ConfigParser> configParserPtr = std::make_shared<ConfigParser>(confPath);
   ConfigurationData confData = configParserPtr->parseConfig();
+  dumpConfig(confData);
 
   std::streambuf *newStdOut, *backupStdOut;
   std::ofstream logFileStream;

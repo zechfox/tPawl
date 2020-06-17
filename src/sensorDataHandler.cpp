@@ -31,6 +31,9 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
   m_rotateCommand[Orientation::RIGHT] = rightCommand.str();
   m_rotateCommand[Orientation::INVERT] = invertCommand.str();
 
+  std::ostringstream mapCommand;
+  mapCommand << MAP_COMMAND << "\"pointer:" << touchScreenDevName << "\" " << monitorName;
+  m_mapInputOutputCommand = mapCommand.str();
   m_accRawDataFactor = accRawDataFactor;
   m_accThreshold = accThreshold;
 
@@ -221,8 +224,11 @@ void SensorDataHandler::rotateScreen(Orientation orientation) const
 {
   std::string command = m_rotateCommand.at(orientation);
   system(command.c_str());
-  // TODO: map input to output:
+
   // xinput --map-to-output "pointer:silead_ts" DSI-1
+  command = m_mapInputOutputCommand;
+  LOG(command);
+  system(command.c_str());
 }
 
 void SensorDataHandler::registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr)

@@ -16,6 +16,7 @@
 using namespace std;
 
 #define ROTATE_COMMAND "xrandr --output "
+#define MAP_COMMAND "xinput --map-to-output "
 struct CoordinatorData
 {
   std::int32_t x;
@@ -73,7 +74,7 @@ class Accelerometer
       }
       else
       {
-        LOG("Open Accelerometer X Failed.");
+        LOG("Open Accelerometer X Failed." << m_accPathX);
       }
 
       if (m_accRawDataY)
@@ -84,7 +85,7 @@ class Accelerometer
       }
       else
       {
-        LOG("Open Accelerometer Y Failed.");
+        LOG("Open Accelerometer Y Failed." << m_accPathY);
       }
 
       CoordinatorData data{xRawData, yRawData};
@@ -133,6 +134,7 @@ class SensorDataHandler
     std::shared_ptr<TouchPanelDevice> m_touchPanel_p;
     std::shared_ptr<Accelerometer> m_accelerometer_p;
     std::map<Orientation, std::string> m_rotateCommand;
+    std::string m_mapInputOutputCommand;
     SlotSpace m_slotSpace;
     float m_accRawDataFactor;
     float m_accThreshold;

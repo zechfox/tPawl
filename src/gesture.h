@@ -32,6 +32,11 @@ class Gesture
 
 
   private:
+    bool isPoint(std::vector<CoordinatorData> coordinatorsData);
+    bool isVerticalMove(std::vector<CoordinatorData> coordinatorsData);
+    bool isHorizontalMove(std::vector<CoordinatorData> coordinatorsData);
+
+
     bool isMoveUp(SensorData& sensorData);
     bool isMoveDown(SensorData& sensorData);
     bool isMoveLeft(SensorData& sensorData);

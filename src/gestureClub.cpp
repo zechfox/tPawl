@@ -36,7 +36,7 @@ std::vector<std::shared_ptr<Gesture>> GestureClub::inviteMembers(SensorData& sen
                [&](std::shared_ptr<Gesture> gesture){
                    return gesture->invite(sensorData);
                });
-  
+  sensorData.coordinatorsData.clear();
   return invitedGestures;
 }
 

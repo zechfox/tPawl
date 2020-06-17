@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <execution>
 #include <numeric>
+#include <cmath>
 #include <stdlib.h>
 
 #include "gesture.h"
@@ -110,7 +111,8 @@ bool Gesture::movementChecker(SensorData& sensorData)
   bool ret = false;
   std::int32_t evidence = convertMovementEvidence(m_evidence);
   std::int32_t orientation = convertOrientation(sensorData.orientation);
-  std::int32_t dirValue = evidence + orientation;
+  std::int32_t dirValue = (evidence + orientation) & 0x3; // mod 4
+  LOG("movementChecker is invoked, evidence: " << evidence << " orientation: " << orientation << " dir: " << dirValue);
 
   switch (dirValue)
   {
@@ -130,6 +132,47 @@ bool Gesture::movementChecker(SensorData& sensorData)
   return ret;
 }
 
+bool Gesture::isPoint(std::vector<CoordinatorData> coordinatorsData)
+{
+  auto first = coordinatorsData.front();
+  auto last = coordinatorsData.back();
+  for (auto coordinatorData : coordinatorsData)
+  {
+    LOG("CoordinatorData X: " << coordinatorData.x << " Y: " << coordinatorData.y);
+  }
+  if (abs(first.x - last.x) < 20
+      && (abs(first.y - last.y) < 20))
+  {
+    return true;
+  }
+  return false;
+}
+
+bool Gesture::isHorizontalMove(std::vector<CoordinatorData> coordinatorsData)
+{
+  auto first = coordinatorsData.front();
+  auto last = coordinatorsData.back();
+
+  if (abs(first.x - last.x) > abs(first.y - last.y))
+  {
+    return true;
+  }
+  LOG("NOT Horizontal Movement.");
+  return false;
+}
+
+bool Gesture::isVerticalMove(std::vector<CoordinatorData> coordinatorsData)
+{
+  auto first = coordinatorsData.front();
+  auto last = coordinatorsData.back();
+
+  if (abs(first.x - last.x) < abs(first.y - last.y))
+  {
+    return true;
+  }
+  LOG("NOT Vertical Movement.");
+  return false;
+}
 // TODO: most of movement code was same,
 // use more common code.
 bool Gesture::isMoveDown(SensorData& sensorData)
@@ -155,7 +198,12 @@ bool Gesture::isMoveDown(SensorData& sensorData)
     greater = data.y;
     return false;
   };
-  auto isGreater = [=] (std::pair<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData) {
+  auto isGreater = [=, this] (std::pair<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData) {
+    if (isPoint(coordinatorsData.second)
+        || isHorizontalMove(coordinatorsData.second))
+    {
+      return false;
+    }
     auto result = std::count_if(coordinatorsData.second.begin(),
                                 coordinatorsData.second.end(),
                                 largerThan);
@@ -195,10 +243,17 @@ bool Gesture::isMoveUp(SensorData& sensorData)
     smaller = data.y;
     return false;
   };
-  auto isSmaller = [=] (std::pair<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData) {
+  auto isSmaller = [=, this] (std::pair<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData) {
+    if (isPoint(coordinatorsData.second)
+        || isHorizontalMove(coordinatorsData.second))
+    {
+      return false;
+    }
     auto result = std::count_if(coordinatorsData.second.begin(),
                                 coordinatorsData.second.end(),
                                 smallerThan);
+
+ 
     if ((result + sensetive) > coordinatorsData.second.size())
     {
       return true;
@@ -235,10 +290,16 @@ bool Gesture::isMoveLeft(SensorData& sensorData)
     smaller = data.x;
     return false;
   };
-  auto isSmaller = [=] (std::pair<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData) {
+  auto isSmaller = [=, this] (std::pair<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData) {
+    if (isPoint(coordinatorsData.second)
+        || isVerticalMove(coordinatorsData.second))
+    {
+      return false;
+    }
     auto result = std::count_if(coordinatorsData.second.begin(),
                                 coordinatorsData.second.end(),
                                 smallerThan);
+   
     if ((result + sensetive) > coordinatorsData.second.size())
     {
       return true;
@@ -275,7 +336,12 @@ bool Gesture::isMoveRight(SensorData& sensorData)
     greater = data.x;
     return false;
   };
-  auto isGreater = [=] (std::pair<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData) {
+  auto isGreater = [=, this] (std::pair<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData) {
+    if (isPoint(coordinatorsData.second)
+        || isVerticalMove(coordinatorsData.second))
+    {
+      return false;
+    }
     auto result = std::count_if(coordinatorsData.second.begin(),
                                 coordinatorsData.second.end(),
                                 largerThan);

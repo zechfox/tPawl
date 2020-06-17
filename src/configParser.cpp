@@ -7,6 +7,7 @@
 #include <fstream>
 #include <map>
 
+#include "log.h"
 #include "configParser.h"
  
 using namespace std;
@@ -38,12 +39,13 @@ ConfigParser::ConfigParser(const std::string& confFilePath)
     accFactorStream >> m_confData.accRawDataFactor;
     accFactorStream.close();
   }
-
+/*
   GestureData gesture1;
   gesture1.touchPointNumber = 2;
   gesture1.evidence = Evidence::MOVE_UP;
   gesture1.action = "echo \"2 finger action\"";
   m_confData.gestures.push_back(gesture1);
+  */
 
 
 }
@@ -73,11 +75,12 @@ bool ConfigParser::readConfigFile(const std::string& confFilePath)
 
       std::size_t groupNameBegin = configData.find_first_of('[');
       std::size_t groupNameEnd = configData.find_first_of(']');
-      if (groupNameBegin >= 0 && groupNameEnd > 0)
+      if (groupNameBegin != std::string::npos && groupNameEnd != std::string::npos)
       {
-        std::string newGroupName = configData.substr(groupNameBegin, groupNameEnd);
+        std::string newGroupName = configData.substr(groupNameBegin + 1, groupNameEnd - 1);
         if (groupName != newGroupName)
         {
+          LOG("New Group: " << newGroupName);
           dumpGroupConfig(groupName, configGroup);
           groupName = newGroupName;
           configGroup.clear();
@@ -86,6 +89,11 @@ bool ConfigParser::readConfigFile(const std::string& confFilePath)
       }
       configGroup.push_back(configData);
     }
+    dumpGroupConfig(groupName, configGroup);
+  }
+  else
+  {
+    LOG("Open Config File Failed.");
   }
 
   return true;
@@ -93,13 +101,18 @@ bool ConfigParser::readConfigFile(const std::string& confFilePath)
 
 void ConfigParser::dumpGroupConfig(const std::string& groupName, const std::vector<std::string> configGroup)
 {
-  if ("General" == groupName.c_str())
+  LOG("Dump Group: " << groupName << "size: " << configGroup.size());
+  if (0 == groupName.compare("General"))
   {
     parseGeneralConfig(configGroup);
   }
-  else if ("Gesture" == groupName.c_str())
+  else if (std::string::npos != groupName.find("Gesture"))
   {
     parseGestureConfig(configGroup);
+  }
+  else
+  {
+    LOG("Not Interested Group.");
   }
 }
 
@@ -108,44 +121,45 @@ void ConfigParser::parseGeneralConfig(const std::vector<std::string> configData)
 {
   auto parser = [&] (const std::string& config) {
     auto configPair = getConfigPair(config);
-    if ("accPath" == configPair.first.c_str())
+    
+    if (0 == configPair.first.compare("accPath"))
     {
       m_confData.accPath = configPair.second;
     }
-    else if ("accTreshold" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("accTreshold"))
     {
       std::string::size_type sz;
       m_confData.accThreshold = std::stof(configPair.second, &sz);
     }
-    else if ("accDevice" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("accDevice"))
     {
       m_confData.accDevice = configPair.second;
     }
-    else if ("accRawDataX" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("accRawDataX"))
     {
       m_confData.accRawDataX = configPair.second;
     }
-    else if ("accRawDataY" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("accRawDataY"))
     {
       m_confData.accRawDataY = configPair.second;
     }
-    else if ("monitorName" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("monitorName"))
     {
       m_confData.monitorName = configPair.second;
     }
-    else if ("accScale" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("accScale"))
     {
       m_confData.accScale = configPair.second;
     }
-    else if ("tsDevPath" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("tsDevPath"))
     {
       m_confData.tsDevPath = configPair.second;
     }
-    else if ("tsDevName" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("tsDevName"))
     {
       m_confData.tsDevName = configPair.second;
     }
-    else if ("logFile" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("logFile"))
     {
       m_confData.logFile = configPair.second;
     }
@@ -166,15 +180,15 @@ void ConfigParser::parseGestureConfig(const std::vector<std::string> configData)
 
   auto parser = [&] (const std::string& config) {
     auto configPair = getConfigPair(config);
-    if ("touchPointNumber" == configPair.first.c_str())
+    if (0 == configPair.first.compare("touchPointNumber"))
     {
       gesture.touchPointNumber = std::stoi(configPair.second, &sz);
     }
-    else if ("evidence" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("evidence"))
     {
       gesture.evidence = convertToEvidence(configPair.second);
     }
-    else if ("action" == configPair.first.c_str())
+    else if (0 == configPair.first.compare("action"))
     {
       gesture.action = configPair.second;
     }
@@ -192,43 +206,43 @@ Evidence ConfigParser::convertToEvidence(const std::string& str)
 {
   Evidence evidence = Evidence::NOT_AVALIABLE;
   
-  if ("MOVE_UP" == str)
+  if (0 == str.compare("MOVE_UP"))
   {
     evidence = Evidence::MOVE_UP;
   }
-  else if ("MOVE_DOWN" == str)
+  else if (0 == str.compare("MOVE_DOWN"))
   {
     evidence = Evidence::MOVE_DOWN;
   }
-  else if ("MOVE_LEFT" == str)
+  else if (0 == str.compare("MOVE_LEFT"))
   {
     evidence = Evidence::MOVE_LEFT;
   }
-  else if ("MOVE_RIGHT" == str)
+  else if (0 == str.compare("MOVE_RIGHT"))
   {
     evidence = Evidence::MOVE_RIGHT;
   }
-  else if ("MOVE_TOP" == str)
+  else if (0 == str.compare("MOVE_TOP"))
   {
     evidence = Evidence::MOVE_TOP;
   }
-  else if ("MOVE_BOTTOM" == str)
+  else if (0 == str.compare("MOVE_BOTTOM"))
   {
     evidence = Evidence::MOVE_BOTTOM;
   }
-  else if ("MOVE_LEFT_SIDE" == str)
+  else if (0 == str.compare("MOVE_LEFT_SIDE"))
   {
     evidence = Evidence::MOVE_LEFT_SIDE;
   }
-  else if ("MOVE_RIGHT_SIDE" == str)
+  else if (0 == str.compare("MOVE_RIGHT_SIDE"))
   {
     evidence = Evidence::MOVE_RIGHT_SIDE;
   }
-  else if ("ENLARGE" == str)
+  else if (0 == str.compare("ENLARGE"))
   {
     evidence = Evidence::ENLARGE;
   }
-  else if ("SHRINK" == str)
+  else if (0 == str.compare("SHRINK"))
   {
     evidence = Evidence::SHRINK;
   }
