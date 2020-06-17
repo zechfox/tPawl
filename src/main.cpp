@@ -68,7 +68,8 @@ int main()
 
   SensorData sensorData;
   sensorData.fingerNumber = 0;
-  auto orientation = Orientation::NORMAL;
+  sensorData.orientation = sensorDataHandlerPtr->getOrientation(); 
+  auto orientation = Orientation::NOT_AVAILABLE;
   while (!g_isQuit)
   {
     if (sensorDataHandlerPtr->fillSensorData(sensorData))
@@ -86,6 +87,7 @@ int main()
         {
           gesture->performAction();
         }
+        
       }
       sensorData.fingerNumber = 0;
     }

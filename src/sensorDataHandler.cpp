@@ -52,6 +52,8 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
   {
     LOG("Failed to open touch screen device.");
   }
+  m_slotSpace.currentSlotNumber = -1;
+  m_slotSpace.activatedSlots.clear();
 }
 
 SensorDataHandler::~SensorDataHandler()
@@ -150,7 +152,11 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
 
   if (ABS_MT_SLOT == inputEventData.code)
   {
-    if (m_slotSpace.currentSlotNumber != inputEventData.value)
+    if (-1 == m_slotSpace.currentSlotNumber)
+    {
+      m_slotSpace.currentSlotNumber = inputEventData.value;
+    }
+    else if (m_slotSpace.currentSlotNumber != inputEventData.value)
     {
       // save old slot data
       CoordinatorData data{m_slotSpace.positionX, m_slotSpace.positionY};
@@ -179,10 +185,11 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
       // all finger left screen
       if (m_slotSpace.activatedSlots.empty())
       {
+        m_slotSpace.currentSlotNumber = -1;
         return true;
       }
     }
-    else
+    else if (-1 != m_slotSpace.currentSlotNumber)
     {
       m_slotSpace.activatedSlots[m_slotSpace.currentSlotNumber] = inputEventData.value;
       sensorData.fingerNumber = m_slotSpace.activatedSlots.size();

@@ -28,7 +28,8 @@ enum class Orientation
   NORMAL,
   LEFT,
   RIGHT,
-  INVERT 
+  INVERT,
+  NOT_AVAILABLE
 };
 
 class TouchPanelDevice
@@ -127,8 +128,8 @@ class SensorDataHandler
     void registerTouchPanelDevice(std::shared_ptr<TouchPanelDevice> touchPanelPtr);
     void registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr);
     void rotateScreen(Orientation orientation) const;
-  private:
     Orientation getOrientation() const;
+  private:
     bool collectEventData(struct input_event& inputEventData, SensorData& sensorDataPtr);
     std::string getTouchScreenDevicePath(std::string& touchScreenName);
     std::shared_ptr<TouchPanelDevice> m_touchPanel_p;
