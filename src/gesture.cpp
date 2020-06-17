@@ -136,10 +136,12 @@ bool Gesture::isPoint(std::vector<CoordinatorData> coordinatorsData)
 {
   auto first = coordinatorsData.front();
   auto last = coordinatorsData.back();
+/*
   for (auto coordinatorData : coordinatorsData)
   {
     LOG("CoordinatorData X: " << coordinatorData.x << " Y: " << coordinatorData.y);
   }
+  */
   if (abs(first.x - last.x) < 20
       && (abs(first.y - last.y) < 20))
   {
@@ -361,8 +363,21 @@ bool Gesture::isMoveRight(SensorData& sensorData)
 bool Gesture::isEnlarged(SensorData& sensorData)
 {
   std::int32_t smallDistance = 0;
+  auto pointChecker = [=, this] (std::pair<std::uint32_t, std::vector<CoordinatorData>> data) {
+    LOG("Fingure: " << data.first);
+    return isPoint(data.second);
+  };
+  bool isAnyPoint = std::any_of(sensorData.coordinatorsData.begin(),
+                                sensorData.coordinatorsData.end(),
+                                pointChecker);
+  if (isAnyPoint)
+  {
+    return false;
+  }
+    
   auto isShrink = [&] (CoordinatorData &first, CoordinatorData &second) {
-    std::int32_t distance = first.x - second.x + first.y - second.y;
+    std::int32_t distance = std::abs(first.x - second.x) + std::abs(first.y - second.y);
+    LOG(first.x << "-" << second.x << "+" << first.y << "-" << second.y << "=" << distance);
     if (distance < smallDistance)
     {
       distance = smallDistance;
@@ -373,7 +388,12 @@ bool Gesture::isEnlarged(SensorData& sensorData)
 
   auto isShrinkedVec = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> first,
                             std::pair<std::uint32_t, std::vector<CoordinatorData>> second) {
-    return std::equal(first.second.begin(), first.second.end(), second.second.begin(), second.second.end(), isShrink);
+    LOG("Pair " << first.first << " : " << second.first);
+    if (first.second.size() < second.second.size())
+      return std::equal(first.second.begin(), first.second.end(), second.second.begin(), isShrink);
+    else
+      return std::equal(second.second.begin(), second.second.end(), first.second.begin(), isShrink);
+
   };
 
   // find coordinatorsData that shrinked.
@@ -387,8 +407,21 @@ bool Gesture::isEnlarged(SensorData& sensorData)
 bool Gesture::isShrinked(SensorData& sensorData)
 {
   std::int32_t largeDistance = 0;
+  auto pointChecker = [=, this] (std::pair<std::uint32_t, std::vector<CoordinatorData>> data) {
+    LOG("Fingure: " << data.first);
+    return isPoint(data.second);
+  };
+  bool isAnyPoint = std::any_of(sensorData.coordinatorsData.begin(),
+                                sensorData.coordinatorsData.end(),
+                                pointChecker);
+  if (isAnyPoint)
+  {
+    return false;
+  }
   auto isEnlarge = [&] (CoordinatorData &first, CoordinatorData &second) {
-    std::int32_t distance = first.x - second.x + first.y - second.y;
+    std::int32_t distance = std::abs(first.x - second.x) + std::abs(first.y - second.y);
+
+    LOG(first.x << "-" << second.x << "+" << first.y << "-" << second.y << "=" << distance);
     if (distance > largeDistance)
     {
       distance = largeDistance;
@@ -399,7 +432,11 @@ bool Gesture::isShrinked(SensorData& sensorData)
 
   auto isEnlargedVec = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> first,
                             std::pair<std::uint32_t, std::vector<CoordinatorData>> second) {
-    return std::equal(first.second.begin(), first.second.end(), second.second.begin(), second.second.end(), isEnlarge);
+    LOG("Pair " << first.first << " : " << second.first);
+    if (first.second.size() < second.second.size())
+      return std::equal(first.second.begin(), first.second.end(), second.second.begin(), isEnlarge);
+    else
+      return std::equal(second.second.begin(), second.second.end(), first.second.begin(), isEnlarge);
   };
 
   // find coordinatorsData that enlarged.

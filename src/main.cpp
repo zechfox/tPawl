@@ -82,6 +82,15 @@ int main()
       LOG("Finger Number:" << sensorData.fingerNumber);
       if (sensorData.fingerNumber > 0)
       {
+        for (auto data: sensorData.coordinatorsData)
+        {
+          LOG(data.first);
+          for (auto coord:data.second)
+          {
+            LOG(coord.x << ":" << coord.y);
+          }
+
+        }
         std::vector<std::shared_ptr<Gesture>> invitedGestures = gestureClubPtr->inviteMembers(sensorData);
         for (auto gesture : invitedGestures)
         {
