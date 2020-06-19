@@ -145,6 +145,7 @@ bool Gesture::isPoint(std::vector<CoordinatorData> coordinatorsData)
   if (abs(first.x - last.x) < 20
       && (abs(first.y - last.y) < 20))
   {
+    LOG("Point!");
     return true;
   }
   return false;
@@ -362,9 +363,11 @@ bool Gesture::isMoveRight(SensorData& sensorData)
 
 bool Gesture::isEnlarged(SensorData& sensorData)
 {
-  std::int32_t smallDistance = 0;
+  std::int32_t smallDistance = INT32_MAX;
+  // TODO: configure sesertive by config file.
+  std::int32_t sensetive = 3;
+
   auto pointChecker = [=, this] (std::pair<std::uint32_t, std::vector<CoordinatorData>> data) {
-    LOG("Fingure: " << data.first);
     return isPoint(data.second);
   };
   bool isAnyPoint = std::any_of(sensorData.coordinatorsData.begin(),
@@ -377,22 +380,31 @@ bool Gesture::isEnlarged(SensorData& sensorData)
     
   auto isShrink = [&] (CoordinatorData &first, CoordinatorData &second) {
     std::int32_t distance = std::abs(first.x - second.x) + std::abs(first.y - second.y);
-    LOG(first.x << "-" << second.x << "+" << first.y << "-" << second.y << "=" << distance);
-    if (distance < smallDistance)
+    if (distance <= smallDistance)
     {
-      distance = smallDistance;
-      return true;
+      smallDistance = distance;
     }
-    return false;
+    else
+    {
+      sensetive--;
+      smallDistance = distance;
+    }
+    return sensetive > 0;
   };
 
   auto isShrinkedVec = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> first,
                             std::pair<std::uint32_t, std::vector<CoordinatorData>> second) {
-    LOG("Pair " << first.first << " : " << second.first);
+    smallDistance = INT32_MAX;
     if (first.second.size() < second.second.size())
+    {
+      sensetive = first.second.size() >> 2;
       return std::equal(first.second.begin(), first.second.end(), second.second.begin(), isShrink);
+    }
     else
+    {
+      sensetive = second.second.size() >> 2;
       return std::equal(second.second.begin(), second.second.end(), first.second.begin(), isShrink);
+    }
 
   };
 
@@ -406,9 +418,10 @@ bool Gesture::isEnlarged(SensorData& sensorData)
 
 bool Gesture::isShrinked(SensorData& sensorData)
 {
-  std::int32_t largeDistance = 0;
+  std::int32_t largeDistance = INT32_MIN;
+  // TODO: configure sesertive by config file.
+  std::int32_t sensetive = 3;
   auto pointChecker = [=, this] (std::pair<std::uint32_t, std::vector<CoordinatorData>> data) {
-    LOG("Fingure: " << data.first);
     return isPoint(data.second);
   };
   bool isAnyPoint = std::any_of(sensorData.coordinatorsData.begin(),
@@ -421,24 +434,34 @@ bool Gesture::isShrinked(SensorData& sensorData)
   auto isEnlarge = [&] (CoordinatorData &first, CoordinatorData &second) {
     std::int32_t distance = std::abs(first.x - second.x) + std::abs(first.y - second.y);
 
-    LOG(first.x << "-" << second.x << "+" << first.y << "-" << second.y << "=" << distance);
-    if (distance > largeDistance)
+    if (distance >= largeDistance)
     {
-      distance = largeDistance;
-      return true;
+      largeDistance = distance;
     }
-    return false;
+    else
+    {
+      sensetive--;
+      largeDistance = distance;
+    }
+    return sensetive > 0;
   };
 
   auto isEnlargedVec = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> first,
                             std::pair<std::uint32_t, std::vector<CoordinatorData>> second) {
-    LOG("Pair " << first.first << " : " << second.first);
+    largeDistance = INT32_MIN;
     if (first.second.size() < second.second.size())
+    {
+      // it's difficult to idendify enlarge.
+      // tolerent more than shrink.
+      sensetive = first.second.size() >> 1;
       return std::equal(first.second.begin(), first.second.end(), second.second.begin(), isEnlarge);
+    }
     else
+    {
+      sensetive = first.second.size() >> 1;
       return std::equal(second.second.begin(), second.second.end(), first.second.begin(), isEnlarge);
+    }
   };
-
   // find coordinatorsData that enlarged.
   auto iter = std::adjacent_find(sensorData.coordinatorsData.begin(),
                                  sensorData.coordinatorsData.end(),

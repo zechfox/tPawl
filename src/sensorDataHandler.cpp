@@ -192,13 +192,14 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
       if (m_slotSpace.activatedSlots.empty())
       {
         m_slotSpace.currentSlotNumber = -1;
+        sensorData.fingerNumber = sensorData.coordinatorsData.size();
         return true;
       }
     }
     else
     {
       m_slotSpace.activatedSlots[m_slotSpace.currentSlotNumber] = inputEventData.value;
-      sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
+    //  sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
     }
 
   }

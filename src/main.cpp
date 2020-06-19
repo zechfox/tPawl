@@ -79,9 +79,9 @@ int main()
         sensorDataHandlerPtr->rotateScreen(sensorData.orientation);
         orientation = sensorData.orientation;
       }
-      LOG("Finger Number:" << sensorData.fingerNumber);
       if (sensorData.fingerNumber > 0)
       {
+        LOG("Finger Number:" << sensorData.fingerNumber);
         for (auto data: sensorData.coordinatorsData)
         {
           LOG(data.first);
