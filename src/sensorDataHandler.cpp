@@ -155,13 +155,11 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
     if (-1 == m_slotSpace.currentSlotNumber)
     {
       m_slotSpace.currentSlotNumber = inputEventData.value;
+      m_slotSpace.positionX = -1;
+      m_slotSpace.positionY = -1;
     }
     else if (m_slotSpace.currentSlotNumber != inputEventData.value)
     {
-      // save old slot data
-      CoordinatorData data{m_slotSpace.positionX, m_slotSpace.positionY};
-      sensorData.coordinatorsData[m_slotSpace.currentSlotNumber].push_back(data);
-      // switch to new slot
       m_slotSpace.currentSlotNumber = inputEventData.value;
     }
   }
@@ -182,6 +180,24 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
     m_slotSpace.positionY = inputEventData.value;
   }
 
+  // save data
+  if (m_slotSpace.positionX != -1
+      && m_slotSpace.positionY != -1)
+  {
+    CoordinatorData data{m_slotSpace.positionX, m_slotSpace.positionY};
+    sensorData.coordinatorsData[m_slotSpace.currentSlotNumber].push_back(data);
+    sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
+    m_slotSpace.positionX = -1;
+    m_slotSpace.positionY = -1;
+  }
+
+  // 1 finger gesture
+  if (1 == sensorData.fingerNumber
+      && sensorData.coordinatorsData[0].size() > 15)
+  {
+    return true;
+  }
+
   if (ABS_MT_TRACKING_ID == inputEventData.code)
   {
     // 1 finger left screen
@@ -191,7 +207,6 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
       // all finger left screen
       if (m_slotSpace.activatedSlots.empty())
       {
-        m_slotSpace.currentSlotNumber = -1;
         sensorData.fingerNumber = sensorData.coordinatorsData.size();
         return true;
       }
@@ -199,7 +214,7 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
     else
     {
       m_slotSpace.activatedSlots[m_slotSpace.currentSlotNumber] = inputEventData.value;
-    //  sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
+      sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
     }
 
   }

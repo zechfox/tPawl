@@ -134,14 +134,11 @@ bool Gesture::movementChecker(SensorData& sensorData)
 
 bool Gesture::isPoint(std::vector<CoordinatorData> coordinatorsData)
 {
+  if (0 == coordinatorsData.size())
+    return true;
   auto first = coordinatorsData.front();
   auto last = coordinatorsData.back();
-/*
-  for (auto coordinatorData : coordinatorsData)
-  {
-    LOG("CoordinatorData X: " << coordinatorData.x << " Y: " << coordinatorData.y);
-  }
-  */
+
   if (abs(first.x - last.x) < 20
       && (abs(first.y - last.y) < 20))
   {
@@ -182,7 +179,7 @@ bool Gesture::isMoveDown(SensorData& sensorData)
 {
   // Down direction only care about y.
   // first y data
-  std::int32_t greater = sensorData.coordinatorsData.at(0).at(0).y; 
+  std::int32_t greater = INT32_MIN; 
   // allow some data less than previous
   // TODO: configure sesertive by config file.
   std::int32_t sensetive = 4;
@@ -227,7 +224,7 @@ bool Gesture::isMoveUp(SensorData& sensorData)
 {
   // Up direction only care about y.
   // first y data
-  std::int32_t smaller = sensorData.coordinatorsData.at(0).at(0).y; 
+  std::int32_t smaller = INT32_MAX; 
   // allow some data greater than previous
   // TODO: configure sesertive by config file.
   std::int32_t sensetive = 4;
@@ -274,7 +271,7 @@ bool Gesture::isMoveLeft(SensorData& sensorData)
 {
   // Left direction only care about x.
   // first x data
-  std::int32_t smaller = sensorData.coordinatorsData.at(0).at(0).x; 
+  std::int32_t smaller = INT32_MAX; 
   // allow some data greater than previous
   // TODO: configure sesertive by config file.
   std::int32_t sensetive = 4;
@@ -320,7 +317,7 @@ bool Gesture::isMoveRight(SensorData& sensorData)
 {
   // Right direction only care about x.
   // first x data
-  std::int32_t greater = sensorData.coordinatorsData.at(0).at(0).x; 
+  std::int32_t greater = INT32_MIN; 
   // allow some data less than previous
   // TODO: configure sesertive by config file.
   std::int32_t sensetive = 4;
