@@ -11,16 +11,25 @@ using namespace std;
 
 GestureClub::GestureClub()
 {
+  m_members.clear();
+  std::vector<GestureData> buildInGestures;
+  GestureData pressGesture;
+  pressGesture.touchPointNumber = 1;
+  pressGesture.evidence = Evidence::PRESS;
+  pressGesture.action = "echo \"1 finger pressed\"";
+  buildInGestures.push_back(pressGesture);
 
+  registerMembers(buildInGestures);
 }
 
 GestureClub::~GestureClub()
 {
-
+  m_members.clear();
 }
 
 void GestureClub::registerMembers(std::vector<GestureData>& gestureData)
 {
+  
   for (auto gestures : gestureData)
   {
     m_members[gestures.touchPointNumber].push_back(std::make_shared<Gesture>(gestures));

@@ -38,6 +38,7 @@ enum class Evidence
   MOVE_RIGHT_SIDE,
   ENLARGE,
   SHRINK,
+  PRESS,
   NOT_AVALIABLE
 };
 

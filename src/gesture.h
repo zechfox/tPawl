@@ -23,12 +23,13 @@ class Gesture
 {
   public:
     Gesture(GestureData& gestureData);
+    Gesture() {}
     ~Gesture();
 
     typedef bool (Gesture::*checkerFuncPtr)(SensorData&);
 
-    bool invite(SensorData& sensorData);
-    bool performAction(void);
+    virtual bool invite(SensorData& sensorData);
+    virtual bool performAction(void);
 
 
   private:
@@ -43,6 +44,7 @@ class Gesture
     bool isMoveRight(SensorData& sensorData);
     bool isEnlarged(SensorData& sensorData);
     bool isShrinked(SensorData& sensorData);
+    bool isPressed(SensorData& sensorData);
 
     bool movementChecker(SensorData& sensorData);
     std::int32_t convertOrientation(Orientation orientation);
@@ -53,5 +55,7 @@ class Gesture
     Evidence m_evidence;
     std::string m_action;
     checkerFuncPtr m_evidenceChecker;
+    std::uint32_t m_triggerTimes;
 
 };
+
