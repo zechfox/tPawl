@@ -170,7 +170,7 @@ bool Gesture::isPressed(SensorData& sensorData)
     else
     {
       m_triggerTimes++;
-      if (m_triggerTimes > 3)
+      if (m_triggerTimes > 1)
       {
         LOG("Long Pressed center X: " << centerX << " center Y: " << centerY);
       }
@@ -443,12 +443,12 @@ bool Gesture::isEnlarged(SensorData& sensorData)
     smallDistance = INT32_MAX;
     if (first.second.size() < second.second.size())
     {
-      sensetive = first.second.size() >> 2;
+      sensetive = first.second.size() >> 1;
       return std::equal(first.second.begin(), first.second.end(), second.second.begin(), isShrink);
     }
     else
     {
-      sensetive = second.second.size() >> 2;
+      sensetive = second.second.size() >> 1;
       return std::equal(second.second.begin(), second.second.end(), first.second.begin(), isShrink);
     }
 

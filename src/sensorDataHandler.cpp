@@ -182,7 +182,8 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
   }
 
   // 1 finger gesture
-  if (1 == sensorData.fingerNumber
+  if ((1 == sensorData.fingerNumber
+       || 2 == sensorData.fingerNumber)
       && sensorData.coordinatorsData[0].size() > 15)
   {
     // currentSlotNumber always 0,

@@ -19,6 +19,18 @@ GestureClub::GestureClub()
   pressGesture.action = "echo \"1 finger pressed\"";
   buildInGestures.push_back(pressGesture);
 
+  GestureData twoFingerEnlarge;
+  twoFingerEnlarge.touchPointNumber = 2;
+  twoFingerEnlarge.evidence = Evidence::ENLARGE;
+  twoFingerEnlarge.action = "echo \"2 finger enlarged\"";
+  buildInGestures.push_back(twoFingerEnlarge);
+
+  GestureData twoFingerShrink;
+  twoFingerShrink.touchPointNumber = 2;
+  twoFingerShrink.evidence = Evidence::SHRINK;
+  twoFingerShrink.action = "echo \"2 finger shrinked\"";
+  buildInGestures.push_back(twoFingerShrink);
+
   registerMembers(buildInGestures);
 }
 
