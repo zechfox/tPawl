@@ -52,7 +52,9 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
   {
     LOG("Failed to open touch screen device.");
   }
-  m_slotSpace.currentSlotNumber = -1;
+  m_slotSpace.currentSlotNumber = 0;
+  m_slotSpace.positionX = -1;
+  m_slotSpace.positionY = -1;
   m_slotSpace.activatedSlots.clear();
 }
 
@@ -152,22 +154,10 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
 
   if (ABS_MT_SLOT == inputEventData.code)
   {
-    if (-1 == m_slotSpace.currentSlotNumber)
-    {
-      m_slotSpace.currentSlotNumber = inputEventData.value;
-      m_slotSpace.positionX = -1;
-      m_slotSpace.positionY = -1;
-    }
-    else if (m_slotSpace.currentSlotNumber != inputEventData.value)
+    if (m_slotSpace.currentSlotNumber != inputEventData.value)
     {
       m_slotSpace.currentSlotNumber = inputEventData.value;
     }
-  }
-
-  // Ignore if no slot was got.
-  if (-1 == m_slotSpace.currentSlotNumber)
-  {
-    return false;
   }
 
   if (ABS_MT_POSITION_X == inputEventData.code)
@@ -195,6 +185,9 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
   if (1 == sensorData.fingerNumber
       && sensorData.coordinatorsData[0].size() > 15)
   {
+    // currentSlotNumber always 0,
+    // postionX and positionY was clear in above
+    // code.
     return true;
   }
 
@@ -208,6 +201,9 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
       if (m_slotSpace.activatedSlots.empty())
       {
         sensorData.fingerNumber = sensorData.coordinatorsData.size();
+        m_slotSpace.currentSlotNumber = 0;
+        m_slotSpace.positionX = -1;
+        m_slotSpace.positionY = -1;
         return true;
       }
     }
@@ -216,7 +212,6 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
       m_slotSpace.activatedSlots[m_slotSpace.currentSlotNumber] = inputEventData.value;
       sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
     }
-
   }
 
   return false;

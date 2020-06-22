@@ -193,7 +193,7 @@ bool Gesture::isMoveDown(SensorData& sensorData)
     }
     // always update greater, due to we measure the trend.
     // for example, one touch point was left screen, and contact
-    // the screen again, the new touch point maybe lower than before leave.
+   // the screen again, the new touch point maybe lower than before leave.
     // We also treat it as down trend if up coming touch pointer above it.
     greater = data.y;
     return false;
