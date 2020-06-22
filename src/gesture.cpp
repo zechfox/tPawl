@@ -17,7 +17,8 @@ using namespace std;
 Gesture::Gesture(GestureData& gestureData):
   m_touchPointNumber(gestureData.touchPointNumber),
   m_evidence(gestureData.evidence),
-  m_action(gestureData.action)
+  m_action(gestureData.action),
+  m_triggerTimes(0)
 {
   m_evidenceChecker = assignChecker(m_evidence);
 }
@@ -99,6 +100,10 @@ Gesture::checkerFuncPtr Gesture::assignChecker(Evidence evidence)
     case Evidence::SHRINK:
       checkerPtr = &Gesture::isShrinked;
       break;
+    case Evidence::PRESS:
+      checkerPtr = &Gesture::isPressed;
+      break;
+
     default:
       checkerPtr = &Gesture::movementChecker;
       break;
@@ -129,6 +134,50 @@ bool Gesture::movementChecker(SensorData& sensorData)
       ret = isMoveRight(sensorData);
       break;
   }
+  return ret;
+}
+
+bool Gesture::isPressed(SensorData& sensorData)
+{
+  bool ret = false;
+  LOG("isPressed");
+  std::int32_t centerX{-1}, centerY{-1};
+  auto& pointData = sensorData.coordinatorsData[0];
+  auto pointDataSize = pointData.size();
+
+  auto sumCoordinatorData = [&](CoordinatorData coordinatorData) {
+    centerX += coordinatorData.x;
+    centerY += coordinatorData.y;
+  };
+
+  if (isPoint(pointData))
+  {
+    std::for_each(pointData.begin(),
+                  pointData.end(),
+                  sumCoordinatorData);
+    centerX /= pointDataSize;
+    centerY /= pointDataSize;
+    if (pointDataSize < 5)
+    {
+      m_triggerTimes = 0;
+      LOG("Short Pressed. center X: " << centerX << " center Y: " << centerY);
+    }
+    else if (pointDataSize < 15)
+    {
+      m_triggerTimes = 0;
+      LOG("Pressed. center X: " << centerX << " center Y: " << centerY);
+    }
+    else
+    {
+      m_triggerTimes++;
+      if (m_triggerTimes > 3)
+      {
+        LOG("Long Pressed center X: " << centerX << " center Y: " << centerY);
+      }
+    }
+    return true;
+  }
+
   return ret;
 }
 
@@ -472,3 +521,4 @@ bool Gesture::performAction(void)
   system(m_action.c_str());
   return true;
 }
+
