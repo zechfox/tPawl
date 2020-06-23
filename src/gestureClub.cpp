@@ -5,8 +5,11 @@
 /*===========================*/
 #include <iostream>
 #include <algorithm>
+
+#include "typeDef.h"
 #include "gestureClub.h"
-#include "gesture.h" 
+#include "gesture.h"
+#include "gestureIf.h"
 using namespace std;
 
 GestureClub::GestureClub()
@@ -48,13 +51,13 @@ void GestureClub::registerMembers(std::vector<GestureData>& gestureData)
   }
 }
 
-std::vector<std::shared_ptr<Gesture>> GestureClub::inviteMembers(SensorData& sensorData)
+std::vector<std::shared_ptr<GestureIf>> GestureClub::inviteMembers(SensorData& sensorData)
 {
-  std::vector<std::shared_ptr<Gesture>> invitedGestures;
+  std::vector<std::shared_ptr<GestureIf>> invitedGestures;
   std::copy_if(m_members[sensorData.fingerNumber].begin(),
                m_members[sensorData.fingerNumber].end(),
                std::back_inserter(invitedGestures),
-               [&](std::shared_ptr<Gesture> gesture){
+               [&](std::shared_ptr<GestureIf> gesture){
                    return gesture->invite(sensorData);
                });
   sensorData.coordinatorsData.clear();

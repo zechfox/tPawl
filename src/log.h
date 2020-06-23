@@ -6,6 +6,7 @@
 #pragma once 
 #include <chrono>
 #include <iomanip>
+#include <iostream>
 // Workaround GCC 4.7.2 not recognizing noinline attribute
 #ifndef NOINLINE_ATTRIBUTE
 #ifdef __ICC

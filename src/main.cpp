@@ -5,6 +5,7 @@
 #include <signal.h>
 
 #include "log.h"
+#include "typeDef.h"
 #include "configParser.h"
 #include "gestureClub.h"
 #include "sensorDataHandler.h"
@@ -91,7 +92,7 @@ int main()
           }
 
         }
-        std::vector<std::shared_ptr<Gesture>> invitedGestures = gestureClubPtr->inviteMembers(sensorData);
+        std::vector<std::shared_ptr<GestureIf>> invitedGestures = gestureClubPtr->inviteMembers(sensorData);
         for (auto gesture : invitedGestures)
         {
           gesture->performAction();

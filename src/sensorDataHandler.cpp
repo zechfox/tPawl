@@ -10,6 +10,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/input.h>
+
+#include "typeDef.h"
 #include "log.h"
 #include "sensorDataHandler.h"
  

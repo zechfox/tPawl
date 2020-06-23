@@ -10,9 +10,8 @@
 #include <vector>
 #include <memory>
 
-#include "configParser.h"
-#include "gesture.h"
-#include "sensorDataHandler.h"
+#include "gestureIf.h"
+#include "typeDef.h"
 
 using namespace std;
 
@@ -23,8 +22,8 @@ class GestureClub
     ~GestureClub();
 
     void registerMembers(std::vector<GestureData>& gestureData);
-    std::vector<std::shared_ptr<Gesture>> inviteMembers(SensorData& sensorData);
+    std::vector<std::shared_ptr<GestureIf>> inviteMembers(SensorData& sensorData);
   private:
-    std::map<std::uint32_t, std::vector<std::shared_ptr<Gesture>>> m_members;
+    std::map<std::uint32_t, std::vector<std::shared_ptr<GestureIf>>> m_members;
 };
 

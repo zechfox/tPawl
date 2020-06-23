@@ -9,6 +9,7 @@
 
 #include "log.h"
 #include "configParser.h"
+#include "typeDef.h"
  
 using namespace std;
 
@@ -204,7 +205,7 @@ void ConfigParser::parseGestureConfig(const std::vector<std::string> configData)
 
 Evidence ConfigParser::convertToEvidence(const std::string& str)
 {
-  Evidence evidence = Evidence::NOT_AVALIABLE;
+  Evidence evidence = Evidence::NOT_AVAILIABLE;
   
   if (0 == str.compare("MOVE_UP"))
   {

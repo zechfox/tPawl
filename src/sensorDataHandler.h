@@ -11,26 +11,12 @@
 #include <fstream>
 #include <map>
 
+#include "typeDef.h"
 #include "log.h"
 #pragma once 
 using namespace std;
 
-#define ROTATE_COMMAND "xrandr --output "
-#define MAP_COMMAND "xinput --map-to-output "
-struct CoordinatorData
-{
-  std::int32_t x;
-  std::int32_t y;
-};
 
-enum class Orientation
-{
-  NORMAL,
-  LEFT,
-  RIGHT,
-  INVERT,
-  NOT_AVAILABLE
-};
 
 class TouchPanelDevice
 {
@@ -99,21 +85,7 @@ class Accelerometer
     std::ifstream m_accRawDataY;
 };
 
-struct SensorData
-{
-  std::uint32_t fingerNumber;
-  Orientation orientation;
-  std::map<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData;
-};
 
-struct SlotSpace
-{
-  std::int32_t currentSlotNumber;
-  std::int32_t positionX;
-  std::int32_t positionY;
-  // slotNumber -> trackId
-  std::map<std::int32_t, std::int32_t> activatedSlots;
-};
 
 class SensorDataHandler
 {
