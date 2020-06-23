@@ -74,6 +74,20 @@ enum class Orientation
   INVERT,
   NOT_AVAILABLE
 };
+
+enum class BuildInAction
+{
+  PRESS,
+  SHORT_PRESS,
+  LONG_PRESS,
+  ONE_FINGER_UP,
+  ONE_FINGER_DOWN,
+  ONE_FINGER_LEFT,
+  ONE_FINGER_RIGHT,
+  TWO_FINGER_ENLARGED,
+  TWO_FINGER_SHRINKED,
+  NOT_AVAILABLE
+};
 /*=====================
 // Data struct
 //=====================*/
@@ -105,6 +119,7 @@ struct GestureData
   std::uint32_t touchPointNumber;
   Evidence evidence;
   std::string action;
+  std::string name;
 };
 
 struct ConfigurationData

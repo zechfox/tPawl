@@ -15,7 +15,8 @@ Gesture::Gesture(GestureData& gestureData):
   m_touchPointNumber(gestureData.touchPointNumber),
   m_evidence(gestureData.evidence),
   m_action(gestureData.action),
-  m_triggerTimes(0)
+  m_triggerTimes(0),
+  m_name(gestureData.name)
 {
   m_evidenceChecker = assignChecker(m_evidence);
 }
@@ -34,47 +35,7 @@ bool Gesture::invite(SensorData& sensorData)
   return false;
 }
 
-std::int32_t Gesture::convertOrientation(Orientation orientation)
-{
-  std::int32_t value = 0;
-  switch (orientation)
-  {
-    case Orientation::NORMAL:
-      value = 0;
-      break;
-    case Orientation::LEFT:
-      value = 1;
-      break;
-    case Orientation::INVERT:
-      value = 2;
-      break;
-    case Orientation::RIGHT:
-      value = 3;
-      break;
-  }
-  return value;
-}
 
-std::int32_t Gesture::convertMovementEvidence(Evidence evidence)
-{
-  std::int32_t value = 0;
-  switch (evidence)
-  {
-    case Evidence::MOVE_UP:
-      value = 0;
-      break;
-    case Evidence::MOVE_LEFT:
-      value = 1;
-      break;
-    case Evidence::MOVE_DOWN:
-      value = 2;
-      break;
-    case Evidence::MOVE_RIGHT:
-      value = 3;
-      break;
-  }
-  return value;
-}
 
 Gesture::checkerFuncPtr Gesture::assignChecker(Evidence evidence)
 {
@@ -117,8 +78,8 @@ bool Gesture::shrinkChecker(SensorData& sensorData)
 bool Gesture::movementChecker(SensorData& sensorData)
 {
   bool ret = false;
-  std::int32_t evidence = convertMovementEvidence(m_evidence);
-  std::int32_t orientation = convertOrientation(sensorData.orientation);
+  std::int32_t evidence = GestureLib::convertMovementEvidence(m_evidence);
+  std::int32_t orientation = GestureLib::convertOrientation(sensorData.orientation);
   std::int32_t dirValue = (evidence + orientation) & 0x3; // mod 4
   LOG("movementChecker is invoked, evidence: " << evidence << " orientation: " << orientation << " dir: " << dirValue);
 
@@ -146,3 +107,7 @@ bool Gesture::performAction(void)
   return true;
 }
 
+void Gesture::dump()
+{
+  LOG(m_name);
+}

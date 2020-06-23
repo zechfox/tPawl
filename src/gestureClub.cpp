@@ -8,38 +8,38 @@
 
 #include "typeDef.h"
 #include "gestureClub.h"
+#include "buildInGesture.h"
 #include "gesture.h"
 #include "gestureIf.h"
+#include "log.h"
 using namespace std;
 
 GestureClub::GestureClub()
 {
   m_members.clear();
-  std::vector<GestureData> buildInGestures;
-  GestureData pressGesture;
-  pressGesture.touchPointNumber = 1;
-  pressGesture.evidence = Evidence::PRESS;
-  pressGesture.action = "echo \"1 finger pressed\"";
-  buildInGestures.push_back(pressGesture);
-
-  GestureData twoFingerEnlarge;
-  twoFingerEnlarge.touchPointNumber = 2;
-  twoFingerEnlarge.evidence = Evidence::ENLARGE;
-  twoFingerEnlarge.action = "echo \"2 finger enlarged\"";
-  buildInGestures.push_back(twoFingerEnlarge);
-
-  GestureData twoFingerShrink;
-  twoFingerShrink.touchPointNumber = 2;
-  twoFingerShrink.evidence = Evidence::SHRINK;
-  twoFingerShrink.action = "echo \"2 finger shrinked\"";
-  buildInGestures.push_back(twoFingerShrink);
-
-  registerMembers(buildInGestures);
+  auto buildInGesture = std::make_shared<BuildInGesture>();
+  // 1 finger buildin gesture
+  m_members[1].push_back(buildInGesture);
+  // 2 finger buildin gesture
+  m_members[2].push_back(buildInGesture);
 }
 
 GestureClub::~GestureClub()
 {
   m_members.clear();
+}
+
+void GestureClub::dumpGestures()
+{
+  for (auto members : m_members)
+  {
+    LOG("Finger: " << members.first << " has member: ");
+    for (auto member : members.second)
+    {
+      member->dump();
+    }
+  }
+
 }
 
 void GestureClub::registerMembers(std::vector<GestureData>& gestureData)

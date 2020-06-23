@@ -23,6 +23,7 @@ class GestureClub
 
     void registerMembers(std::vector<GestureData>& gestureData);
     std::vector<std::shared_ptr<GestureIf>> inviteMembers(SensorData& sensorData);
+    void dumpGestures();
   private:
     std::map<std::uint32_t, std::vector<std::shared_ptr<GestureIf>>> m_members;
 };

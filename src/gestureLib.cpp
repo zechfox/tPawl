@@ -15,6 +15,48 @@
 #include "gestureLib.h"
 
 namespace GestureLib {
+  std::int32_t convertOrientation(Orientation orientation)
+  {
+    std::int32_t value = 0;
+    switch (orientation)
+    {
+      case Orientation::NORMAL:
+        value = 0;
+        break;
+      case Orientation::LEFT:
+        value = 1;
+        break;
+      case Orientation::INVERT:
+        value = 2;
+        break;
+      case Orientation::RIGHT:
+        value = 3;
+        break;
+    }
+    return value;
+  }
+
+  std::int32_t convertMovementEvidence(Evidence evidence)
+  {
+    std::int32_t value = 0;
+    switch (evidence)
+    {
+      case Evidence::MOVE_UP:
+        value = 0;
+        break;
+      case Evidence::MOVE_LEFT:
+        value = 1;
+        break;
+      case Evidence::MOVE_DOWN:
+        value = 2;
+        break;
+      case Evidence::MOVE_RIGHT:
+        value = 3;
+        break;
+    }
+    return value;
+  }
+
   std::pair<PressType, CoordinatorData> isPressed(SensorData& sensorData)
   {
     bool ret = false;

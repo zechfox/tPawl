@@ -65,6 +65,7 @@ int main()
                                                           confData.accRawDataY);
   sensorDataHandlerPtr->registerAccelerometer(accelerometerPtr);
   gestureClubPtr->registerMembers(confData.gestures);
+  gestureClubPtr->dumpGestures();
   configParserPtr.reset();
 
   SensorData sensorData;

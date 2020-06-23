@@ -26,20 +26,20 @@ class Gesture : public GestureIf
 
     bool invite(SensorData& sensorData);
     bool performAction(void);
+    void dump();
 
   private:
     bool movementChecker(SensorData& sensorData);
     bool enlargeChecker(SensorData& sensorData);
     bool shrinkChecker(SensorData& sensorData);
-    std::int32_t convertOrientation(Orientation orientation);
-    std::int32_t convertMovementEvidence(Evidence evidence);
-
+    
     checkerFuncPtr assignChecker(Evidence evidence);
     std::uint32_t m_touchPointNumber;
     Evidence m_evidence;
     std::string m_action;
     checkerFuncPtr m_evidenceChecker;
     std::uint32_t m_triggerTimes;
+    std::string m_name;
 
 };
 

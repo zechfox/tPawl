@@ -40,15 +40,6 @@ ConfigParser::ConfigParser(const std::string& confFilePath)
     accFactorStream >> m_confData.accRawDataFactor;
     accFactorStream.close();
   }
-/*
-  GestureData gesture1;
-  gesture1.touchPointNumber = 2;
-  gesture1.evidence = Evidence::MOVE_UP;
-  gesture1.action = "echo \"2 finger action\"";
-  m_confData.gestures.push_back(gesture1);
-  */
-
-
 }
 
 ConfigParser::~ConfigParser(void)
@@ -177,6 +168,7 @@ void ConfigParser::parseGeneralConfig(const std::vector<std::string> configData)
 void ConfigParser::parseGestureConfig(const std::vector<std::string> configData)
 {
   GestureData gesture;
+  gesture.name = "Gesture";
   std::string::size_type sz;
 
   auto parser = [&] (const std::string& config) {
@@ -192,6 +184,10 @@ void ConfigParser::parseGestureConfig(const std::vector<std::string> configData)
     else if (0 == configPair.first.compare("action"))
     {
       gesture.action = configPair.second;
+    }
+    else if (0 == configPair.first.compare("name"))
+    {
+      gesture.name = configPair.second;
     }
     else
     {

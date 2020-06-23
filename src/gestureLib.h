@@ -11,6 +11,8 @@ namespace GestureLib {
   std::pair<PressType, CoordinatorData> isPressed(SensorData& sensorData);
   bool isVerticalMove(std::vector<CoordinatorData> coordinatorsData);
   bool isHorizontalMove(std::vector<CoordinatorData> coordinatorsData);
+  std::int32_t convertOrientation(Orientation orientation);
+  std::int32_t convertMovementEvidence(Evidence evidence);
 
 
   bool isMoveUp(SensorData& sensorData);
