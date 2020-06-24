@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <linux/input.h>
 
+#include "XLibApi.h"
 #include "typeDef.h"
 #include "log.h"
 #include "sensorDataHandler.h"

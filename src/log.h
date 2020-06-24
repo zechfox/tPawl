@@ -16,7 +16,7 @@
 #endif // __ICC
 #endif // NOINLINE_ATTRIBUTE
 
-struct None { };
+struct Empty{ };
 
 template<typename List>
 struct LogData {
@@ -53,7 +53,7 @@ void output(std::ostream& os, std::pair<Begin, Last>&& data)
   os << data.second;
 }
 
-inline void output(std::ostream& os, None)
+inline void output(std::ostream& os, Empty)
 { }
 template<typename List>
 void Log(const char* file, int line,
@@ -66,5 +66,5 @@ void Log(const char* file, int line,
   std::cout << std::endl;
 }
 
-#define LOG(msg) (Log(__FILE__, __LINE__, LogData<None>() << msg))
+#define LOG(msg) (Log(__FILE__, __LINE__, LogData<Empty>() << msg))
 

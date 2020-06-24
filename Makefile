@@ -16,9 +16,10 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
 CXXFLAGS ?= -std=c++2a
+XLIBFLAGS ?= $(shell pkg-config --cflags --libs x11)
 
 $(BUILD_DIR)/$(TARGET): $(OBJS)
-	$(CC) $(OBJS) -lstdc++ -o $@ $(LDFLAGS)
+	$(CC) $(OBJS) -lstdc++ $(XLIBFLAGS) -o $@ $(LDFLAGS)
 
 # assembly
 $(BUILD_DIR)/%.s.o: %.s
