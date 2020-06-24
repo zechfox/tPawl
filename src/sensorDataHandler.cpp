@@ -178,7 +178,7 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
   {
     CoordinatorData data{m_slotSpace.positionX, m_slotSpace.positionY};
     sensorData.coordinatorsData[m_slotSpace.currentSlotNumber].push_back(data);
-    sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
+    sensorData.fingerNumber = sensorData.coordinatorsData.size();
     m_slotSpace.positionX = -1;
     m_slotSpace.positionY = -1;
   }
@@ -213,7 +213,6 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
     else
     {
       m_slotSpace.activatedSlots[m_slotSpace.currentSlotNumber] = inputEventData.value;
-      sensorData.fingerNumber = m_slotSpace.activatedSlots.size();
     }
   }
 

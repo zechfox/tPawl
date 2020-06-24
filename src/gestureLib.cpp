@@ -324,26 +324,31 @@ namespace GestureLib {
                        isGreater);
   }
 
-  bool isEnlarged(SensorData& sensorData)
+  bool isShrinked(SensorData& sensorData)
   {
+    // center point
+    // distance from center point decreased.
+    //
     std::int32_t smallDistance = INT32_MAX;
     // TODO: configure sesertive by config file.
     std::int32_t sensetive = 3;
-
-    auto pointChecker = [=] (std::pair<std::uint32_t, std::vector<CoordinatorData>> data) {
-      return isPoint(data.second);
+    CoordinatorData centerPoint{0, 0};
+    auto sumFirstElement = [&](std::pair<std::uint32_t, std::vector<CoordinatorData>> data) {
+      centerPoint.x += data.second.front().x;
+      centerPoint.y += data.second.front().y;
     };
-    bool isAnyPoint = std::any_of(sensorData.coordinatorsData.begin(),
-                                  sensorData.coordinatorsData.end(),
-                                  pointChecker);
-    if (isAnyPoint)
-    {
-      return false;
-    }
+    std::for_each(sensorData.coordinatorsData.begin(),
+                  sensorData.coordinatorsData.end(),
+                  sumFirstElement);
+    centerPoint.x /= sensorData.fingerNumber;
+    centerPoint.y /= sensorData.fingerNumber;
+    LOG("CenterPoint: " << centerPoint.x << " : " << centerPoint.y);
 
-    auto isShrink = [&] (CoordinatorData &first, CoordinatorData &second) {
-      std::int32_t distance = std::abs(first.x - second.x) + std::abs(first.y - second.y);
-      if (distance <= smallDistance)
+    auto isShrink = [&] (CoordinatorData &point) {
+      std::int32_t distance = std::abs(point.x - centerPoint.x) + std::abs(point.y - centerPoint.y);
+      LOG("Distance " << distance);
+      // 10 as filter
+      if ((distance) <= smallDistance)
       {
         smallDistance = distance;
       }
@@ -352,84 +357,50 @@ namespace GestureLib {
         sensetive--;
         smallDistance = distance;
       }
-      return sensetive > 0;
+      return sensetive >= 0;
     };
 
-    auto isShrinkedVec = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> first,
-                              std::pair<std::uint32_t, std::vector<CoordinatorData>> second) {
+    auto isPointTraceShrinked = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> pointTrace) {
       smallDistance = INT32_MAX;
-      if (first.second.size() < second.second.size())
-      {
-        sensetive = first.second.size() >> 2;
-        return std::equal(first.second.begin(), first.second.end(), second.second.begin(), isShrink);
-      }
-      else
-      {
-        sensetive = second.second.size() >> 2;
-        return std::equal(second.second.begin(), second.second.end(), first.second.begin(), isShrink);
-      }
-
+      LOG("IsShrinked: " << pointTrace.first);
+      sensetive = pointTrace.second.size() >> 2;
+      return !isPoint(pointTrace.second) && std::all_of(pointTrace.second.begin(), pointTrace.second.end(), isShrink);
     };
 
-    // find coordinatorsData that shrinked.
-    auto iter = std::adjacent_find(sensorData.coordinatorsData.begin(),
-                                   sensorData.coordinatorsData.end(),
-                                   isShrinkedVec);
-
-    return (iter == sensorData.coordinatorsData.end());
+    return std::any_of(sensorData.coordinatorsData.begin(),
+                       sensorData.coordinatorsData.end(),
+                       isPointTraceShrinked);
   }
 
-  bool isShrinked(SensorData& sensorData)
+  bool isEnlarged(SensorData& sensorData)
   {
-    std::int32_t largeDistance = INT32_MIN;
-    // TODO: configure sesertive by config file.
-    std::int32_t sensetive = 3;
-    auto pointChecker = [=] (std::pair<std::uint32_t, std::vector<CoordinatorData>> data) {
-      return isPoint(data.second);
-    };
-    bool isAnyPoint = std::any_of(sensorData.coordinatorsData.begin(),
-                                  sensorData.coordinatorsData.end(),
-                                  pointChecker);
-    if (isAnyPoint)
-    {
-      return false;
-    }
-    auto isEnlarge = [&] (CoordinatorData &first, CoordinatorData &second) {
-      std::int32_t distance = std::abs(first.x - second.x) + std::abs(first.y - second.y);
+    std::int32_t distance = 0;
+    std::int32_t threshold = 100 * (sensorData.fingerNumber - 1);
 
-      if (distance >= largeDistance)
-      {
-        largeDistance = distance;
-      }
-      else
-      {
-        sensetive--;
-        largeDistance = distance;
-      }
-      return sensetive > 0;
+    auto sumDistance = [&] (std::vector<CoordinatorData> &firstPointTrace, std::vector<CoordinatorData> &secondPointTrace) {
+      std::int32_t startDistance = std::abs(firstPointTrace.front().x - secondPointTrace.front().x)
+          + std::abs(firstPointTrace.front().y - secondPointTrace.front().y);
+      std::int32_t endDistance = std::abs(firstPointTrace.back().x - secondPointTrace.back().x)
+          + std::abs(firstPointTrace.back().y - secondPointTrace.back().y);
+      distance += endDistance - startDistance;
+      LOG("Start Distance: " << startDistance << " End Distance: " << endDistance << " Sum: " << distance);
     };
 
-    auto isEnlargedVec = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> first,
-                              std::pair<std::uint32_t, std::vector<CoordinatorData>> second) {
-      largeDistance = INT32_MIN;
-      if (first.second.size() < second.second.size())
-      {
-        // it's difficult to idendify enlarge.
-        // tolerent more than shrink.
-        sensetive = first.second.size() >> 1;
-        return std::equal(first.second.begin(), first.second.end(), second.second.begin(), isEnlarge);
-      }
-      else
-      {
-        sensetive = first.second.size() >> 1;
-        return std::equal(second.second.begin(), second.second.end(), first.second.begin(), isEnlarge);
-      }
+    auto isPointTraceEnlarged = [&] (std::pair<std::uint32_t, std::vector<CoordinatorData>> first,
+                                     std::pair<std::uint32_t, std::vector<CoordinatorData>> second) {
+      LOG("IsEnlarged: " << first.first << " <-> " << second.first);
+      std::int32_t startDistance = std::abs(first.second.front().x - second.second.front().x)
+          + std::abs(first.second.front().y - second.second.front().y);
+      std::int32_t endDistance = std::abs(first.second.back().x - second.second.back().x)
+          + std::abs(first.second.back().y - second.second.back().y);
+      distance += endDistance - startDistance;
+      LOG("Start Distance: " << startDistance << " End Distance: " << endDistance << " Sum: " << distance);
+      return distance > threshold;
     };
-    // find coordinatorsData that enlarged.
+    
     auto iter = std::adjacent_find(sensorData.coordinatorsData.begin(),
                                    sensorData.coordinatorsData.end(),
-                                   isEnlargedVec);
-
-    return (iter == sensorData.coordinatorsData.end());
+                                   isPointTraceEnlarged);
+    return iter != sensorData.coordinatorsData.end();
   }
 }
