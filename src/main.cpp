@@ -9,6 +9,7 @@
 #include "configParser.h"
 #include "gestureClub.h"
 #include "sensorDataHandler.h"
+#include "XLibApi.h"
 
 using namespace std;
 bool g_isQuit = false;
@@ -54,6 +55,7 @@ int main()
   LOG("Touch Pawl Start!");
   signal(SIGINT, signal_handle);
 
+  XLibApi::getInstance();
   auto gestureClubPtr = std::make_shared<GestureClub>();
   auto sensorDataHandlerPtr = std::make_shared<SensorDataHandler>(confData.monitorName,
                                                                   confData.accRawDataFactor,
@@ -111,6 +113,7 @@ int main()
   accelerometerPtr.reset();
   gestureClubPtr.reset();
   sensorDataHandlerPtr.reset();
+  XLibApi::freeInstance();
   LOG("Bye!");
   std::cout.rdbuf(backupStdOut);
   logFileStream.close();
