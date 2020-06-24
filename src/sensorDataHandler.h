@@ -97,20 +97,20 @@ class SensorDataHandler
     ~SensorDataHandler();
 
     bool fillSensorData(SensorData& sensorData);
-    void registerTouchPanelDevice(std::shared_ptr<TouchPanelDevice> touchPanelPtr);
     void registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr);
     void rotateScreen(Orientation orientation) const;
     Orientation getOrientation() const;
   private:
     bool collectEventData(struct input_event& inputEventData, SensorData& sensorDataPtr);
     std::string getTouchScreenDevicePath(std::string& touchScreenName);
-    std::shared_ptr<TouchPanelDevice> m_touchPanel_p;
+    void setTouchScreenDeviceProps(std::string property, std::int32_t value);
     std::shared_ptr<Accelerometer> m_accelerometer_p;
     std::map<Orientation, std::string> m_rotateCommand;
     std::string m_mapInputOutputCommand;
     SlotSpace m_slotSpace;
     float m_accRawDataFactor;
     float m_accThreshold;
+    std::string m_touchScreenName;
     std::vector<pollfd> m_sensorFds;
 };
 

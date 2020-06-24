@@ -21,6 +21,7 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
                                      float accRawDataFactor,
                                      float accThreshold,
                                      std::string& touchScreenDevName)
+  :m_touchScreenName(touchScreenDevName)
 {
   std::ostringstream normalCommand, leftCommand, rightCommand, invertCommand;
   normalCommand << ROTATE_COMMAND << monitorName << " --rotate " << "normal";
@@ -34,12 +35,12 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
   m_rotateCommand[Orientation::INVERT] = invertCommand.str();
 
   std::ostringstream mapCommand;
-  mapCommand << MAP_COMMAND << "\"pointer:" << touchScreenDevName << "\" " << monitorName;
+  mapCommand << MAP_COMMAND << "\"pointer:" << m_touchScreenName<< "\" " << monitorName;
   m_mapInputOutputCommand = mapCommand.str();
   m_accRawDataFactor = accRawDataFactor;
   m_accThreshold = accThreshold;
 
-  std::string tsDevPath = getTouchScreenDevicePath(touchScreenDevName);
+  std::string tsDevPath = getTouchScreenDevicePath(m_touchScreenName);
   LOG("TouchScreen Path:" << tsDevPath);
   
   pollfd tmpFd;
@@ -58,10 +59,15 @@ SensorDataHandler::SensorDataHandler(std::string& monitorName,
   m_slotSpace.positionX = -1;
   m_slotSpace.positionY = -1;
   m_slotSpace.activatedSlots.clear();
+  // disable touchSreen in X.
+  setTouchScreenDeviceProps("Device Enabled", 0);
+
 }
 
 SensorDataHandler::~SensorDataHandler()
 {
+  // restore touchSreen in X.
+  setTouchScreenDeviceProps("Device Enabled", 1);
 
 }
 // TODO: more elegant way.
@@ -260,4 +266,12 @@ void SensorDataHandler::rotateScreen(Orientation orientation) const
 void SensorDataHandler::registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr)
 {
   m_accelerometer_p = accelerometerPtr;
+}
+
+void SensorDataHandler::setTouchScreenDeviceProps(std::string property, std::int32_t value)
+{
+  std::string baseCommand = "xinput --set-prop --type=int --format=8 ";
+  std::ostringstream command;
+  command << baseCommand << "\"pointer:" << m_touchScreenName << "\" \"" << property << "\" " << value;
+  system(command.str().c_str());
 }

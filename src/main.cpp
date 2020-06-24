@@ -108,8 +108,9 @@ int main()
 
     }
   }
-
-
+  accelerometerPtr.reset();
+  gestureClubPtr.reset();
+  sensorDataHandlerPtr.reset();
   LOG("Bye!");
   std::cout.rdbuf(backupStdOut);
   logFileStream.close();
