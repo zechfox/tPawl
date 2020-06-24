@@ -88,6 +88,13 @@ enum class BuildInAction
   TWO_FINGER_SHRINKED,
   NOT_AVAILABLE
 };
+
+enum class KeyState
+{
+  NONE,
+  PRESS,
+  RELEASE
+};
 /*=====================
 // Data struct
 //=====================*/

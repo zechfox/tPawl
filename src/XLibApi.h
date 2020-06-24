@@ -5,6 +5,8 @@
 /*===========================*/
 #include <memory>
 #include <X11/Xlib.h>
+
+#include "typeDef.h"
 #pragma once
 class XLibApi;
 
@@ -18,7 +20,7 @@ class XLibApi
     static XLibApiPtr getInstance();
     static void freeInstance();
 
-    bool sendMouseEvent();
+    bool sendMouseEvent(KeyState keyState, std::int32_t button);
     bool sendKeyboardEvent();
     bool setDeviceProps();
     bool rotateScreen();
