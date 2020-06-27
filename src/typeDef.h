@@ -89,6 +89,16 @@ enum class BuildInAction
   NOT_AVAILABLE
 };
 
+enum class BuildInKey
+{
+  MOUSE_MOVE,
+  LEFT_CLICK,
+  RIGHT_CLICK,
+  WHEEL_UP,
+  WHEEL_DOWN,
+  NOT_AVAILABLE
+};
+
 enum class KeyState
 {
   NONE,

@@ -20,7 +20,7 @@ class XLibApi
     static XLibApiPtr getInstance();
     static void freeInstance();
 
-    bool sendMouseEvent(KeyState keyState, std::int32_t button);
+    bool sendMouseEvent(KeyState keyState, BuildInKey key, CoordinatorData coordinatorData);
     bool sendKeyboardEvent();
     bool setDeviceProps();
     bool rotateScreen();
