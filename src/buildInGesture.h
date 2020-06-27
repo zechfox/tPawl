@@ -24,9 +24,8 @@ class BuildInGesture : public GestureIf
   private:
     BuildInAction getOneFingerAction(SensorData& sensorData);
     BuildInAction getTwoFingerAction(SensorData& sensorData);
-    bool setAction(BuildInAction action);
 
-    std::string m_action;
+    BuildInAction m_action;
     std::string m_name;
 
 };

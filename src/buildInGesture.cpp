@@ -8,6 +8,7 @@
 #include "buildInGesture.h"
 #include "gestureLib.h" 
 #include "log.h"
+#include "XLibApi.h"
 
 using namespace std;
 
@@ -24,12 +25,55 @@ bool BuildInGesture::invite(SensorData& sensorData)
     action = getTwoFingerAction(sensorData);
   }
 
-  return setAction(action);
+  m_action = action;
+  return m_action != BuildInAction::NOT_AVAILABLE;
 }
 
 bool BuildInGesture::performAction(void)
 {
-  system(m_action.c_str());
+  std::string command;
+  KeyState keyState;
+  BuildInKey key;
+  CoordinatorData coordinatorData;
+  switch (m_action)
+  {
+    case BuildInAction::ONE_FINGER_UP:
+      command = "echo \"1 finger up\"";
+      keyState = KeyState::PRESS;
+      key = BuildInKey::WHEEL_UP;
+      XLibApi::getInstance()->sendMouseEvent(keyState, key, coordinatorData);
+      break;
+    case BuildInAction::ONE_FINGER_LEFT:
+      command = "echo \"1 finger left\"";
+      break;
+    case BuildInAction::ONE_FINGER_DOWN:
+      command = "echo \"1 finger down\"";
+      break;
+    case BuildInAction::ONE_FINGER_RIGHT:
+      command = "echo \"1 finger right\"";
+      break;
+    case BuildInAction::PRESS:
+      command = "echo \"1 finger press\"";
+      keyState = KeyState::PRESS;
+      key = BuildInKey::LEFT_CLICK;
+      XLibApi::getInstance()->sendMouseEvent(keyState, key, coordinatorData);
+      break;
+    case BuildInAction::SHORT_PRESS:
+      command = "echo \"1 finger short press\"";
+      break;
+    case BuildInAction::LONG_PRESS:
+      command = "echo \"1 finger long press\"";
+      break;
+    case BuildInAction::TWO_FINGER_ENLARGED:
+      command = "echo \"2 finger enlarged\"";
+      break;
+    case BuildInAction::TWO_FINGER_SHRINKED:
+      command = "echo \"2 finger shrinked\"";
+      break;
+    default:
+      break;
+  }
+  system(command.c_str());
   return true;
 }
 
@@ -86,44 +130,6 @@ BuildInAction BuildInGesture::getOneFingerAction(SensorData& sensorData)
   }
 
   return action;
-}
-
-bool BuildInGesture::setAction(BuildInAction action)
-{
-  m_action.clear();
-  switch (action)
-  {
-    case BuildInAction::ONE_FINGER_UP:
-      m_action = "echo \"1 finger up\"";
-      break;
-    case BuildInAction::ONE_FINGER_LEFT:
-      m_action = "echo \"1 finger left\"";
-      break;
-    case BuildInAction::ONE_FINGER_DOWN:
-      m_action = "echo \"1 finger down\"";
-      break;
-    case BuildInAction::ONE_FINGER_RIGHT:
-      m_action = "echo \"1 finger right\"";
-      break;
-    case BuildInAction::PRESS:
-      m_action = "echo \"1 finger press\"";
-      break;
-    case BuildInAction::SHORT_PRESS:
-      m_action = "echo \"1 finger short press\"";
-      break;
-    case BuildInAction::LONG_PRESS:
-      m_action = "echo \"1 finger long press\"";
-      break;
-    case BuildInAction::TWO_FINGER_ENLARGED:
-      m_action = "echo \"2 finger enlarged\"";
-      break;
-    case BuildInAction::TWO_FINGER_SHRINKED:
-      m_action = "echo \"2 finger shrinked\"";
-      break;
-    default:
-      break;
-  }
-  return !m_action.empty();
 }
 
 BuildInAction BuildInGesture::getTwoFingerAction(SensorData& sensorData)
