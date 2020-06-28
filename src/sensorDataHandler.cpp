@@ -255,13 +255,20 @@ Orientation SensorDataHandler::getOrientation() const
 
 void SensorDataHandler::rotateScreen(Orientation orientation) const
 {
-  std::string command = m_rotateCommand.at(orientation);
-  system(command.c_str());
+  // std::string command = m_rotateCommand.at(orientation);
+  // system(command.c_str());
 
   // xinput --map-to-output "pointer:silead_ts" DSI-1
-  command = m_mapInputOutputCommand;
-  LOG(command);
-  system(command.c_str());
+  // command = m_mapInputOutputCommand;
+  // LOG(command);
+  // system(command.c_str());
+  if (XLibApi::getInstance())
+  {
+    if (!XLibApi::getInstance()->rotateScreen(orientation))
+    {
+      LOG("ERROR: Rotate Screen Failed.");
+    }
+  }
 }
 
 void SensorDataHandler::registerAccelerometer(std::shared_ptr<Accelerometer> accelerometerPtr)
@@ -271,8 +278,13 @@ void SensorDataHandler::registerAccelerometer(std::shared_ptr<Accelerometer> acc
 
 void SensorDataHandler::setTouchScreenDeviceProps(std::string property, std::int32_t value)
 {
-  std::string baseCommand = "xinput --set-prop --type=int --format=8 ";
-  std::ostringstream command;
-  command << baseCommand << "\"pointer:" << m_touchScreenName << "\" \"" << property << "\" " << value;
-  system(command.str().c_str());
+  // std::string baseCommand = "xinput --set-prop --type=int --format=8 ";
+  // std::ostringstream command;
+  // command << baseCommand << "\"pointer:" << m_touchScreenName << "\" \"" << property << "\" " << value;
+  // system(command.str().c_str());
+  std::string devName = "pointer:";
+  if (XLibApi::getInstance())
+  {
+    XLibApi::getInstance()->setDeviceIntProps(devName.append(m_touchScreenName), property, value);
+  }
 }

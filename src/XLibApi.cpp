@@ -6,7 +6,9 @@
 #include <memory>
 #include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
-#include <X11/extensions/XTest.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/Xatom.h>
 
 #include "XLibApi.h"
 #include "log.h"
@@ -16,15 +18,19 @@ XLibApiPtr XLibApi::m_singletonInstance = 0;
 XLibApi::XLibApi()
 {
   m_displayPtr = XOpenDisplay(":0.0");
+
   if (NULL == m_displayPtr)
   {
     LOG("Open Display Failed");
+    return;
   }
+  m_screenConfigurationPtr = XRRGetScreenInfo(m_displayPtr, DefaultRootWindow(m_displayPtr));
   LOG("XLibApi Start!");
 }
 
 XLibApi::~XLibApi()
 {
+  XRRFreeScreenConfigInfo(m_screenConfigurationPtr);
   XCloseDisplay(m_displayPtr);
 }
 
@@ -43,6 +49,13 @@ void XLibApi::freeInstance()
   {
     m_singletonInstance.reset();
   }
+}
+
+CoordinatorData XLibApi::getScreenSize()
+{
+  Screen* s = DefaultScreenOfDisplay(m_displayPtr);
+  CoordinatorData screenSize{s->width, s->height};
+  return screenSize;
 }
 
 bool XLibApi::sendKeyboardEvent()
@@ -132,4 +145,57 @@ bool XLibApi::sendMouseEvent(KeyState keyState, BuildInKey key, CoordinatorData 
 
   XFlush (m_displayPtr);
   return true;
+}
+
+// set integer property, format = 32, 1 value
+bool XLibApi::setDeviceIntProps(std::string& devName, std::string& propertyName, std::int32_t value)
+{
+  XIDeviceInfo *devices;
+  std::intptr_t numDevices;
+  Atom prop = XInternAtom(m_displayPtr, propertyName.c_str(), False);;
+  std::int32_t loop = 0;
+  bool found = false;
+     
+  devices = XIQueryDevice(m_displayPtr, XIAllDevices, (int *)numDevices);
+  for(loop = 0; loop < numDevices; loop++)
+  {
+    if (strcmp(devices[loop].name, devName.c_str()) == 0)
+    {
+      found = true;
+      break;
+    }
+  }
+  
+  if (found)
+  {
+    XIChangeProperty(m_displayPtr, devices[loop].deviceid, prop, XA_INTEGER, 32, PropModeReplace,
+                     (unsigned char*)&value, 1);
+  }
+  else
+  {
+    LOG("ERROR: No Such Device was found.");
+  }
+
+  return found;
+}
+
+bool XLibApi::rotateScreen(Orientation orientation)
+{
+  Rotation rotation;
+  std::map<Orientation, Rotation> orientation2rotation {
+    {Orientation::NORMAL, RR_Rotate_0},
+        {Orientation::INVERT, RR_Rotate_180},
+        {Orientation::LEFT, RR_Rotate_90},
+        {Orientation::RIGHT, RR_Rotate_270},
+  };
+  rotation = orientation2rotation[orientation];
+  
+  SizeID configurationId = XRRConfigCurrentConfiguration(m_screenConfigurationPtr, &rotation);
+
+  return XRRSetScreenConfig(m_displayPtr,
+                            m_screenConfigurationPtr,
+                            DefaultRootWindow(m_displayPtr),
+                            configurationId, 
+                            rotation,
+                            CurrentTime);
 }

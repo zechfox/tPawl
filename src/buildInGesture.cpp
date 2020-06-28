@@ -29,19 +29,31 @@ bool BuildInGesture::invite(SensorData& sensorData)
   return m_action != BuildInAction::NOT_AVAILABLE;
 }
 
+BuildInGesture::BuildInGesture() :
+  m_name("Build In Gesture"),
+  m_screenWidth(0),
+  m_screenHeight(0)
+{
+  if (XLibApi::getInstance())
+  {
+    auto screenSize = XLibApi::getInstance()->getScreenSize();
+    m_screenWidth = screenSize.x;
+    m_screenHeight = screenSize.y;
+  }
+}
+
 bool BuildInGesture::performAction(void)
 {
   std::string command;
   KeyState keyState;
   BuildInKey key;
-  CoordinatorData coordinatorData;
   switch (m_action)
   {
     case BuildInAction::ONE_FINGER_UP:
       command = "echo \"1 finger up\"";
       keyState = KeyState::PRESS;
       key = BuildInKey::WHEEL_UP;
-      XLibApi::getInstance()->sendMouseEvent(keyState, key, coordinatorData);
+      XLibApi::getInstance()->sendMouseEvent(keyState, key, m_pointerPosition);
       break;
     case BuildInAction::ONE_FINGER_LEFT:
       command = "echo \"1 finger left\"";
@@ -56,7 +68,7 @@ bool BuildInGesture::performAction(void)
       command = "echo \"1 finger press\"";
       keyState = KeyState::PRESS;
       key = BuildInKey::LEFT_CLICK;
-      XLibApi::getInstance()->sendMouseEvent(keyState, key, coordinatorData);
+      XLibApi::getInstance()->sendMouseEvent(keyState, key, m_pointerPosition);
       break;
     case BuildInAction::SHORT_PRESS:
       command = "echo \"1 finger short press\"";
@@ -75,6 +87,33 @@ bool BuildInGesture::performAction(void)
   }
   system(command.c_str());
   return true;
+}
+
+CoordinatorData BuildInGesture::rotatePointerPosition(Orientation orientation, CoordinatorData pointerPosition)
+{
+  CoordinatorData rotatedPointerPosition = pointerPosition;
+  switch (orientation)
+  {
+    case Orientation::NORMAL:
+      break;
+    case Orientation::LEFT:
+      rotatedPointerPosition.x = m_screenHeight - pointerPosition.y;
+      rotatedPointerPosition.y = pointerPosition.x;
+      break;
+    case Orientation::RIGHT:
+      rotatedPointerPosition.x = pointerPosition.y;
+      rotatedPointerPosition.y = m_screenWidth - pointerPosition.x;
+      break;
+    case Orientation::INVERT:
+      rotatedPointerPosition.x = m_screenWidth - pointerPosition.x;
+      rotatedPointerPosition.y = m_screenHeight - pointerPosition.y;
+      break;
+    default:
+      break;
+  }
+
+  return rotatedPointerPosition;
+
 }
 
 BuildInAction BuildInGesture::getOneFingerAction(SensorData& sensorData)
@@ -103,6 +142,7 @@ BuildInAction BuildInGesture::getOneFingerAction(SensorData& sensorData)
     {
       action = BuildInAction::LONG_PRESS;
     }
+    m_pointerPosition = rotatePointerPosition(sensorData.orientation, pressData.second);
   }
   else if (GestureLib::isMoveUp(sensorData))
   {

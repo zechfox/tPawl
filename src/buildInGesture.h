@@ -15,7 +15,7 @@ using namespace std;
 class BuildInGesture : public GestureIf
 {
   public:
-    BuildInGesture(): m_name("Build In Gesture") {}
+    BuildInGesture();
     ~BuildInGesture() {}
     bool invite(SensorData& sensorData);
     bool performAction(void);
@@ -24,8 +24,11 @@ class BuildInGesture : public GestureIf
   private:
     BuildInAction getOneFingerAction(SensorData& sensorData);
     BuildInAction getTwoFingerAction(SensorData& sensorData);
+    CoordinatorData rotatePointerPosition(Orientation orientation, CoordinatorData pointerPosition);
 
     BuildInAction m_action;
     std::string m_name;
-
+    std::int32_t m_screenWidth;
+    std::int32_t m_screenHeight;
+    CoordinatorData m_pointerPosition;
 };
