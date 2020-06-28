@@ -86,33 +86,30 @@ bool XLibApi::sendMouseEvent(KeyState keyState, BuildInKey key, CoordinatorData 
 
   // ButtonPress, ButtonRelease, and MotionNotify
   XButtonEvent xEvent;
-  std::intptr_t focusState;
+  std::int32_t focusState;
   
 
-  XQueryPointer(m_displayPtr, DefaultRootWindow (m_displayPtr),
+  XQueryPointer(m_displayPtr, DefaultRootWindow(m_displayPtr),
                 &xEvent.root, &xEvent.window,
                 &xEvent.x_root, &xEvent.y_root,
                 &xEvent.x, &xEvent.y,
                 &xEvent.state);
 
-  if (!XGetInputFocus(m_displayPtr, &xEvent.window, (int*)focusState))
+  if (!XGetInputFocus(m_displayPtr, &xEvent.window, (int*)&focusState))
   {
     LOG("Get X focus windows failed!");
     return false;
   }
   xEvent.display = m_displayPtr;
+  xEvent.same_screen = True;
+  xEvent.root = RootWindow(m_displayPtr, 0);
+  xEvent.state = 0;
+  xEvent.window = DefaultRootWindow (m_displayPtr);
+  xEvent.subwindow = None;//DefaultRootWindow (m_displayPtr);
+  xEvent.time = CurrentTime;
   // calculate relative position
   xEvent.x = coordinatorData.x - xEvent.x;
   xEvent.y = coordinatorData.y - xEvent.y;
-
-  if (KeyState::PRESS == keyState)
-  {
-    xEvent.type = ButtonPress;
-  }
-  else if (KeyState::RELEASE == keyState)
-  {
-    xEvent.type = ButtonRelease;
-  }
 
   if (BuildInKey::LEFT_CLICK == key)
   {
@@ -131,6 +128,23 @@ bool XLibApi::sendMouseEvent(KeyState keyState, BuildInKey key, CoordinatorData 
     xEvent.button = Button5;
   }
 
+
+  if (KeyState::PRESS == keyState)
+  {
+    xEvent.type = ButtonPress;
+  }
+  else if (KeyState::RELEASE == keyState)
+  {
+    xEvent.type = ButtonRelease;
+    switch(xEvent.button) {
+        case 1: xEvent.state |= Button1MotionMask; break;
+        case 2: xEvent.state |= Button2MotionMask; break;
+        case 3: xEvent.state |= Button3MotionMask; break;
+        case 4: xEvent.state |= Button4MotionMask; break;
+        case 5: xEvent.state |= Button5MotionMask; break;
+      }
+  }
+
   if (BuildInKey::MOUSE_MOVE == key)
   {
     XWarpPointer (m_displayPtr, None, None, 0,0,0,0, xEvent.x, xEvent.y);
@@ -138,9 +152,10 @@ bool XLibApi::sendMouseEvent(KeyState keyState, BuildInKey key, CoordinatorData 
     return true;
   }
 
-  if (XSendEvent (m_displayPtr, PointerWindow, True, NoEventMask, (XEvent*)&xEvent) == 0)
+  if (XSendEvent (m_displayPtr, PointerWindow, True, ButtonPressMask, (XEvent*)&xEvent) == 0)
   {
     LOG("Error to send the event!");
+    return false;
   }
 
   XFlush (m_displayPtr);
@@ -151,12 +166,13 @@ bool XLibApi::sendMouseEvent(KeyState keyState, BuildInKey key, CoordinatorData 
 bool XLibApi::setDeviceIntProps(std::string& devName, std::string& propertyName, std::int32_t value)
 {
   XIDeviceInfo *devices;
-  std::intptr_t numDevices;
+  std::int32_t numDevices;
   Atom prop = XInternAtom(m_displayPtr, propertyName.c_str(), False);;
   std::int32_t loop = 0;
   bool found = false;
      
-  devices = XIQueryDevice(m_displayPtr, XIAllDevices, (int *)numDevices);
+  devices = XIQueryDevice(m_displayPtr, XIAllDevices, (int*)&numDevices);
+
   for(loop = 0; loop < numDevices; loop++)
   {
     if (strcmp(devices[loop].name, devName.c_str()) == 0)
