@@ -3,6 +3,7 @@
 /*
 /*
 /*===========================*/
+#include <unistd.h>
 
 #include "typeDef.h"
 #include "buildInGesture.h"
@@ -15,6 +16,7 @@ using namespace std;
 bool BuildInGesture::invite(SensorData& sensorData)
 {
   BuildInAction action = BuildInAction::NOT_AVAILABLE;
+  m_isPerformAction = true;
 
   if (1 == sensorData.fingerNumber)
   {
@@ -30,9 +32,12 @@ bool BuildInGesture::invite(SensorData& sensorData)
 }
 
 BuildInGesture::BuildInGesture() :
+  m_action(BuildInAction::NOT_AVAILABLE),
   m_name("Build In Gesture"),
   m_screenWidth(0),
-  m_screenHeight(0)
+  m_screenHeight(0),
+  m_gestureInvitedTimes(0),
+  m_isPerformAction(false)
 {
   if (XLibApi::getInstance())
   {
@@ -47,12 +52,17 @@ bool BuildInGesture::performAction(void)
   std::string command;
   KeyState keyState;
   BuildInKey key;
+  if (!m_isPerformAction)
+  {
+    return false;
+  }
+
   switch (m_action)
   {
     case BuildInAction::ONE_FINGER_UP:
       command = "echo \"1 finger up\"";
       keyState = KeyState::PRESS;
-      key = BuildInKey::WHEEL_UP;
+      key = BuildInKey::WHEEL_DOWN;
       XLibApi::getInstance()->sendMouseEvent(keyState, key, m_pointerPosition);
       break;
     case BuildInAction::ONE_FINGER_LEFT:
@@ -60,6 +70,9 @@ bool BuildInGesture::performAction(void)
       break;
     case BuildInAction::ONE_FINGER_DOWN:
       command = "echo \"1 finger down\"";
+      keyState = KeyState::PRESS;
+      key = BuildInKey::WHEEL_UP;
+      XLibApi::getInstance()->sendMouseEvent(keyState, key, m_pointerPosition);
       break;
     case BuildInAction::ONE_FINGER_RIGHT:
       command = "echo \"1 finger right\"";
@@ -69,12 +82,22 @@ bool BuildInGesture::performAction(void)
       keyState = KeyState::PRESS;
       key = BuildInKey::LEFT_CLICK;
       XLibApi::getInstance()->sendMouseEvent(keyState, key, m_pointerPosition);
+      sleep(1);
+      keyState = KeyState::RELEASE;
+      XLibApi::getInstance()->sendMouseEvent(keyState, key, m_pointerPosition);
       break;
     case BuildInAction::SHORT_PRESS:
       command = "echo \"1 finger short press\"";
+      keyState = KeyState::PRESS;
+      key = BuildInKey::MOUSE_MOVE;
+      XLibApi::getInstance()->sendMouseEvent(keyState, key, m_pointerPosition);
       break;
     case BuildInAction::LONG_PRESS:
       command = "echo \"1 finger long press\"";
+      key = BuildInKey::RIGHT_CLICK;
+      XLibApi::getInstance()->sendMouseEvent(keyState, key, m_pointerPosition);
+      keyState = KeyState::RELEASE;
+      XLibApi::getInstance()->sendMouseEvent(keyState, key, m_pointerPosition);
       break;
     case BuildInAction::TWO_FINGER_ENLARGED:
       command = "echo \"2 finger enlarged\"";
@@ -85,6 +108,9 @@ bool BuildInGesture::performAction(void)
     default:
       break;
   }
+
+  m_gestureInvitedTimes = 0;
+
   system(command.c_str());
   return true;
 }
@@ -97,12 +123,12 @@ CoordinatorData BuildInGesture::rotatePointerPosition(Orientation orientation, C
     case Orientation::NORMAL:
       break;
     case Orientation::LEFT:
-      rotatedPointerPosition.x = m_screenHeight - pointerPosition.y;
+      rotatedPointerPosition.x = m_screenWidth - pointerPosition.y;
       rotatedPointerPosition.y = pointerPosition.x;
       break;
     case Orientation::RIGHT:
       rotatedPointerPosition.x = pointerPosition.y;
-      rotatedPointerPosition.y = m_screenWidth - pointerPosition.x;
+      rotatedPointerPosition.y = m_screenHeight- pointerPosition.x;
       break;
     case Orientation::INVERT:
       rotatedPointerPosition.x = m_screenWidth - pointerPosition.x;
@@ -111,6 +137,7 @@ CoordinatorData BuildInGesture::rotatePointerPosition(Orientation orientation, C
     default:
       break;
   }
+  LOG("Rotated Pointer: " << rotatedPointerPosition.x << ":" << rotatedPointerPosition.y);
 
   return rotatedPointerPosition;
 

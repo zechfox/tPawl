@@ -5,8 +5,10 @@
 /*===========================*/
 #include <memory>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <X11/Intrinsic.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/extensions/XTest.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/Xatom.h>
 
@@ -17,7 +19,7 @@ XLibApiPtr XLibApi::m_singletonInstance = 0;
 
 XLibApi::XLibApi()
 {
-  m_displayPtr = XOpenDisplay(":0.0");
+  m_displayPtr = XOpenDisplay(":0");
 
   if (NULL == m_displayPtr)
   {
@@ -25,6 +27,10 @@ XLibApi::XLibApi()
     return;
   }
   m_screenConfigurationPtr = XRRGetScreenInfo(m_displayPtr, DefaultRootWindow(m_displayPtr));
+  if (NULL == m_screenConfigurationPtr)
+  {
+    LOG("Cannot get screen info.");
+  }
   LOG("XLibApi Start!");
 }
 
@@ -66,47 +72,13 @@ bool XLibApi::sendKeyboardEvent()
 
 bool XLibApi::sendMouseEvent(KeyState keyState, BuildInKey key, CoordinatorData coordinatorData)
 {
-  //typedef struct {
-  //  int type;  /* ButtonPress or ButtonRelease */
-  //  unsigned long serial; /* # of last request processed by server */
-  //  Bool send_event; /* true if this came from a SendEvent request */
-  //  Display *display; /* Display the event was read from */
-  //  Window window;  /* ``event'' window it is reported relative to */
-  //  Window root;  /* root window that the event occurred on */
-  //  Window subwindow; /* child window */
-  //  Time time;  /* milliseconds */
-  //  int x, y;  /* pointer x, y coordinates in event window */
-  //  int x_root, y_root; /* coordinates relative to root */
-  //  unsigned int state; /* key or button mask */
-  //  unsigned int button; /* detail */
-  //  Bool same_screen; /* same screen flag */
-  //} XButtonEvent;
-  //typedef XButtonEvent XButtonPressedEvent;
-  //typedef XButtonEvent XButtonReleasedEvent;
-
-  // ButtonPress, ButtonRelease, and MotionNotify
   XButtonEvent xEvent;
-  std::int32_t focusState;
-  
-
   XQueryPointer(m_displayPtr, DefaultRootWindow(m_displayPtr),
                 &xEvent.root, &xEvent.window,
                 &xEvent.x_root, &xEvent.y_root,
                 &xEvent.x, &xEvent.y,
                 &xEvent.state);
 
-  if (!XGetInputFocus(m_displayPtr, &xEvent.window, (int*)&focusState))
-  {
-    LOG("Get X focus windows failed!");
-    return false;
-  }
-  xEvent.display = m_displayPtr;
-  xEvent.same_screen = True;
-  xEvent.root = RootWindow(m_displayPtr, 0);
-  xEvent.state = 0;
-  xEvent.window = DefaultRootWindow (m_displayPtr);
-  xEvent.subwindow = None;//DefaultRootWindow (m_displayPtr);
-  xEvent.time = CurrentTime;
   // calculate relative position
   xEvent.x = coordinatorData.x - xEvent.x;
   xEvent.y = coordinatorData.y - xEvent.y;
@@ -128,42 +100,25 @@ bool XLibApi::sendMouseEvent(KeyState keyState, BuildInKey key, CoordinatorData 
     xEvent.button = Button5;
   }
 
+  XWarpPointer (m_displayPtr, None, None, 0,0,0,0, xEvent.x, xEvent.y);
 
-  if (KeyState::PRESS == keyState)
+  if (BuildInKey::MOUSE_MOVE != key)
   {
-    xEvent.type = ButtonPress;
-  }
-  else if (KeyState::RELEASE == keyState)
-  {
-    xEvent.type = ButtonRelease;
-    switch(xEvent.button) {
-        case 1: xEvent.state |= Button1MotionMask; break;
-        case 2: xEvent.state |= Button2MotionMask; break;
-        case 3: xEvent.state |= Button3MotionMask; break;
-        case 4: xEvent.state |= Button4MotionMask; break;
-        case 5: xEvent.state |= Button5MotionMask; break;
-      }
+    XTestFakeButtonEvent(m_displayPtr, xEvent.button, KeyState::PRESS == keyState, CurrentTime);
   }
 
-  if (BuildInKey::MOUSE_MOVE == key)
+  if ( BuildInKey::WHEEL_UP == key
+       || BuildInKey::WHEEL_DOWN == key)
   {
-    XWarpPointer (m_displayPtr, None, None, 0,0,0,0, xEvent.x, xEvent.y);
-    XFlush(m_displayPtr);
-    return true;
-  }
-
-  if (XSendEvent (m_displayPtr, PointerWindow, True, ButtonPressMask, (XEvent*)&xEvent) == 0)
-  {
-    LOG("Error to send the event!");
-    return false;
+    XTestFakeButtonEvent(m_displayPtr, xEvent.button, false, CurrentTime);
   }
 
   XFlush (m_displayPtr);
   return true;
 }
 
-// set integer property, format = 32, 1 value
-bool XLibApi::setDeviceIntProps(std::string& devName, std::string& propertyName, std::int32_t value)
+// set integer property, format = 8, 1 value
+bool XLibApi::setDeviceIntProps(std::string& devName, std::string& propertyName, std::int8_t value)
 {
   XIDeviceInfo *devices;
   std::int32_t numDevices;
@@ -184,12 +139,12 @@ bool XLibApi::setDeviceIntProps(std::string& devName, std::string& propertyName,
   
   if (found)
   {
-    XIChangeProperty(m_displayPtr, devices[loop].deviceid, prop, XA_INTEGER, 32, PropModeReplace,
+    XIChangeProperty(m_displayPtr, devices[loop].deviceid, prop, XA_INTEGER, 8, PropModeReplace,
                      (unsigned char*)&value, 1);
   }
   else
   {
-    LOG("ERROR: No Such Device was found.");
+    LOG("ERROR: No Such Device was found. Device: " << devName);
   }
 
   return found;
@@ -204,14 +159,14 @@ bool XLibApi::rotateScreen(Orientation orientation)
         {Orientation::LEFT, RR_Rotate_90},
         {Orientation::RIGHT, RR_Rotate_270},
   };
-  rotation = orientation2rotation[orientation];
-  
-  SizeID configurationId = XRRConfigCurrentConfiguration(m_screenConfigurationPtr, &rotation);
 
-  return XRRSetScreenConfig(m_displayPtr,
-                            m_screenConfigurationPtr,
-                            DefaultRootWindow(m_displayPtr),
-                            configurationId, 
-                            rotation,
-                            CurrentTime);
+  SizeID configurationId = XRRConfigCurrentConfiguration(m_screenConfigurationPtr, &rotation);
+  rotation = orientation2rotation[orientation];
+
+  return RRSetConfigSuccess == XRRSetScreenConfig(m_displayPtr,
+                                                  m_screenConfigurationPtr,
+                                                  DefaultRootWindow(m_displayPtr),
+                                                  configurationId, 
+                                                  rotation,
+                                                  CurrentTime);
 }

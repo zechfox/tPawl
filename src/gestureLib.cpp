@@ -83,15 +83,10 @@ namespace GestureLib {
         pressType = PressType::SHORT_PRESS;
         LOG("Short Pressed. center X: " << pressPoint.x << " center Y: " << pressPoint.y);
       }
-      else if (pointDataSize < 15)
-      {
-        pressType = PressType::PRESS;
-        LOG("Pressed. center X: " << pressPoint.x << " center Y: " << pressPoint.y);
-      }
       else
       {
-        pressType = PressType::LONG_PRESS;
-        LOG("Long Pressed center X: " << pressPoint.x << " center Y: " << pressPoint.y);
+        pressType = PressType::PRESS;
+        LOG("Pressed center X: " << pressPoint.x << " center Y: " << pressPoint.y);
       }
     }
 

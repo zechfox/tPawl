@@ -160,7 +160,7 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
   {
     return false;
   }
-
+  sensorData.isFingerLeft = false;
   if (ABS_MT_SLOT == inputEventData.code)
   {
     if (m_slotSpace.currentSlotNumber != inputEventData.value)
@@ -169,14 +169,15 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
     }
   }
 
+  // TODO: factor by configuration
   if (ABS_MT_POSITION_X == inputEventData.code)
   {
-    m_slotSpace.positionX = inputEventData.value;
+    m_slotSpace.positionX = static_cast<std::int32_t>(inputEventData.value * 1.07);;
   }
 
   if (ABS_MT_POSITION_Y == inputEventData.code)
   {
-    m_slotSpace.positionY = inputEventData.value;
+    m_slotSpace.positionY = static_cast<std::int32_t>(inputEventData.value * 1.12);
   }
 
   // save data
@@ -211,6 +212,7 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
       if (m_slotSpace.activatedSlots.empty())
       {
         sensorData.fingerNumber = sensorData.coordinatorsData.size();
+        sensorData.isFingerLeft = true;
         m_slotSpace.currentSlotNumber = 0;
         m_slotSpace.positionX = -1;
         m_slotSpace.positionY = -1;
@@ -220,6 +222,7 @@ bool SensorDataHandler::collectEventData(input_event& inputEventData, SensorData
     else
     {
       m_slotSpace.activatedSlots[m_slotSpace.currentSlotNumber] = inputEventData.value;
+      
     }
   }
 
@@ -282,9 +285,8 @@ void SensorDataHandler::setTouchScreenDeviceProps(std::string property, std::int
   // std::ostringstream command;
   // command << baseCommand << "\"pointer:" << m_touchScreenName << "\" \"" << property << "\" " << value;
   // system(command.str().c_str());
-  std::string devName = "pointer:";
   if (XLibApi::getInstance())
   {
-    XLibApi::getInstance()->setDeviceIntProps(devName.append(m_touchScreenName), property, value);
+    XLibApi::getInstance()->setDeviceIntProps(m_touchScreenName, property, value);
   }
 }

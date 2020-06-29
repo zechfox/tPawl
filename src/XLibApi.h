@@ -23,7 +23,7 @@ class XLibApi
     CoordinatorData getScreenSize();
     bool sendMouseEvent(KeyState keyState, BuildInKey key, CoordinatorData coordinatorData);
     bool sendKeyboardEvent();
-    bool setDeviceIntProps(std::string& devName, std::string& propertyName, std::int32_t value);
+    bool setDeviceIntProps(std::string& devName, std::string& propertyName, std::int8_t value);
     bool rotateScreen(Orientation orientation);
     bool mapInputToOutput();
 
@@ -31,5 +31,6 @@ class XLibApi
     static XLibApiPtr m_singletonInstance;
     Display *m_displayPtr;
     XRRScreenConfiguration *m_screenConfigurationPtr;
+    int m_screen;
 
 };

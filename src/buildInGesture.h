@@ -31,4 +31,6 @@ class BuildInGesture : public GestureIf
     std::int32_t m_screenWidth;
     std::int32_t m_screenHeight;
     CoordinatorData m_pointerPosition;
+    std::int32_t m_gestureInvitedTimes;
+    bool m_isPerformAction;
 };

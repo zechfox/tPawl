@@ -19,7 +19,7 @@ CXXFLAGS ?= -std=c++2a
 XLIBFLAGS ?= $(shell pkg-config --cflags --libs x11)
 
 $(BUILD_DIR)/$(TARGET): $(OBJS)
-	$(CC) $(OBJS) -lstdc++ $(XLIBFLAGS) -lXi -lXrandr -o $@ $(LDFLAGS)
+	$(CC) $(OBJS) -lstdc++ $(XLIBFLAGS) -lXi -lXrandr -lXtst -o $@ $(LDFLAGS)
 
 # assembly
 $(BUILD_DIR)/%.s.o: %.s

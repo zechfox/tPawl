@@ -118,6 +118,7 @@ struct CoordinatorData
 struct SensorData
 {
   std::uint32_t fingerNumber;
+  bool isFingerLeft;
   Orientation orientation;
   std::map<std::uint32_t, std::vector<CoordinatorData>> coordinatorsData;
 };
